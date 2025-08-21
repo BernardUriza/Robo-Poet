@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+robo-poet-env/
+venv/
+env/
+ENV/
+
+# TensorFlow/ML
+*.h5
+*.hdf5
+checkpoints/
+logs/
+models/
+*.pb
+*.tflite
+
+# Data files
+data/
+datasets/
+*.txt
+*.csv
+*.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# CUDA
+*.ptx
+*.cubin
+*.fatbin
