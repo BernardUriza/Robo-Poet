@@ -217,7 +217,7 @@ class TextGenerator:
             
             # Sample next character
             next_index = self._sample(preds)
-            next_char = self.idx_to_char[next_index]
+            next_char = self.idx_to_char.get(next_index, '?')
             
             # Update for next iteration
             generated += next_char
@@ -240,4 +240,4 @@ class TextGenerator:
         exp_preds = np.exp(preds)
         preds = exp_preds / np.sum(exp_preds)
         probas = np.random.multinomial(1, preds, 1)
-        return np.argmax(probas)
+        return int(np.argmax(probas))

@@ -32,7 +32,7 @@ def list_available_models():
     if not models_dir.exists():
         return []
     
-    model_files = list(models_dir.glob('robo_poet_model_*.h5'))
+    model_files = list(models_dir.glob('robo_poet_model_*.keras')) + list(models_dir.glob('robo_poet_model_*.h5'))
     return sorted(model_files, key=lambda x: x.stat().st_mtime, reverse=True)
 
 def main():
@@ -82,9 +82,12 @@ Ejemplos de uso:
     args = parser.parse_args()
     
     # List models if requested
-    models = list_available_models()
+    if args.list:
+        models = list_available_models()
+    else:
+        models = list_available_models()
     
-    if args.list or not models:
+    if args.list or (not args.model and not models):
         print("📊 MODELOS DISPONIBLES")
         print("=" * 40)
         if not models:
@@ -152,7 +155,7 @@ Ejemplos de uso:
             import json
             with open(metadata_path) as f:
                 metadata = json.load(f)
-            tokenizer_data = metadata.get('tokenizer_data', {})
+            tokenizer_data = metadata  # Use the metadata directly, not nested
         else:
             # Fallback: create simple character-based tokenizer from training text
             print("⚠️ No se encontró metadata, creando tokenizer desde archivo original...")
@@ -171,8 +174,10 @@ Ejemplos de uso:
                 return 1
         
         # Create generator
-        char_to_idx = tokenizer_data.get('char_to_int', tokenizer_data.get('char_to_idx', {}))
-        idx_to_char = tokenizer_data.get('int_to_char', tokenizer_data.get('idx_to_char', {}))
+        char_to_idx = tokenizer_data.get('char_to_idx', tokenizer_data.get('char_to_int', {}))
+        raw_idx_to_char = tokenizer_data.get('idx_to_char', tokenizer_data.get('int_to_char', {}))
+        # Ensure idx_to_char has integer keys
+        idx_to_char = {int(k): v for k, v in raw_idx_to_char.items()}
         
         generator = TextGenerator(model, char_to_idx, idx_to_char)
         

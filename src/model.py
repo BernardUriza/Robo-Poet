@@ -185,7 +185,7 @@ class ModelTrainer:
                 verbose=1
             ),
             tf.keras.callbacks.ModelCheckpoint(
-                filepath='models/checkpoint_epoch_{epoch:02d}_loss_{val_loss:.4f}.h5',
+                filepath='models/checkpoint_epoch_{epoch:02d}_loss_{val_loss:.4f}.keras',
                 monitor='val_loss',
                 save_best_only=True,
                 save_weights_only=False,
