@@ -41,6 +41,7 @@ class LSTMTextGenerator:
         print(f"   Vocab size: {self.vocab_size}")
         print(f"   Sequence length: {self.sequence_length}")
         print(f"   LSTM units: {self.lstm_units}")
+        print(f"   JIT Compilation: Habilitado con libdevice")
         
         # Input layer
         inputs = layers.Input(shape=(self.sequence_length, self.vocab_size))

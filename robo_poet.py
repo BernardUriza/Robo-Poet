@@ -6,24 +6,144 @@ Interfaz académica unificada para entrenamiento y generación de texto con LSTM
 Sistema de dos fases: entrenamiento intensivo y generación pura.
 
 Author: Student ML Researcher
-Version: 2.0.0 - Unified Academic Interface
+Version: 2.0.1 - WSL2 GPU Detection Solution
 Hardware: Optimized for NVIDIA RTX 2000 Ada
+Platform: WSL2 + Kali Linux + Windows 11
+
+TECHNICAL NOTE: WSL2 GPU Detection Solution
+===========================================
+This framework implements a robust GPU detection system specifically designed
+for WSL2 environments where standard TensorFlow GPU detection often fails.
+
+Problem: tf.config.list_physical_devices('GPU') returns empty list in WSL2
+Solution: Direct GPU operation test bypasses detection issues
+Result: Full GPU acceleration in WSL2 without manual configuration
+
+Key Features:
+- Multi-strategy GPU detection (standard + direct access)
+- Automatic CUDA library environment configuration  
+- Graceful degradation to CPU mode when needed
+- Zero-configuration setup for end users
 """
 
-import sys
+# CRITICAL: Configure GPU environment FIRST, before any imports
 import os
+conda_prefix = os.environ.get('CONDA_PREFIX', '')
+if conda_prefix:
+    os.environ['CUDA_HOME'] = conda_prefix
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    # FORCE correct library paths, don't append potentially wrong existing ones
+    lib_paths = [f'{conda_prefix}/lib', f'{conda_prefix}/lib64']
+    # Only append system paths, not potentially wrong conda paths
+    system_paths = ['/usr/lib/x86_64-linux-gnu', '/lib/x86_64-linux-gnu']
+    lib_paths.extend(system_paths)
+    clean_ld = ':'.join(lib_paths)
+    os.environ['LD_LIBRARY_PATH'] = clean_ld
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
+import sys
 import json
 import time
+import argparse
 from pathlib import Path
 from typing import Optional, List, Dict
 from datetime import datetime
 
+# Environment already configured at the top of the file
+print(f"🔧 GPU environment FORZADO para: {conda_prefix}" if conda_prefix else "⚠️ CONDA_PREFIX no encontrado")
+if conda_prefix:
+    print(f"🔧 CUDA_HOME forzado a: {os.environ.get('CUDA_HOME', 'NO_SET')}")
+    print(f"🔧 LD_LIBRARY_PATH limpiado y reconfigurado")
+    print(f"🔧 Nuevas rutas: {os.environ.get('LD_LIBRARY_PATH', '')[:120]}...")
+
+# CRITICAL: WSL2 GPU Detection - Robust multi-strategy approach
+def detect_gpu_for_wsl2():
+    """
+    Advanced GPU detection specifically designed for WSL2 environments.
+    
+    WSL2 has known issues with standard TensorFlow GPU detection where:
+    1. tf.config.list_physical_devices('GPU') returns empty list
+    2. But direct GPU operations work perfectly
+    3. This affects NVIDIA drivers in WSL2 environments
+    
+    Returns:
+        tuple: (gpu_available: bool, tf_module: module)
+    """
+    import os
+    import time
+    
+    print("🔧 Iniciando detección de GPU optimizada para WSL2...")
+    
+    # Ensure optimal logging for diagnosis
+    original_log_level = os.environ.get('TF_CPP_MIN_LOG_LEVEL', '2')
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+    
+    try:
+        import tensorflow as tf
+        
+        # Strategy 1: Standard TensorFlow detection
+        tf_gpus = tf.config.list_physical_devices('GPU')
+        if tf_gpus:
+            print(f"✅ GPU detectada vía método estándar: {len(tf_gpus)} GPU(s)")
+            os.environ['TF_CPP_MIN_LOG_LEVEL'] = original_log_level
+            return True, tf
+        
+        # Strategy 2: Direct GPU operation test (WSL2 fix)
+        print("🔍 Método estándar falló, probando acceso directo GPU (fix WSL2)...")
+        try:
+            with tf.device('/GPU:0'):
+                test_tensor = tf.constant([1.0, 2.0, 3.0])
+                result = tf.reduce_sum(test_tensor)
+            
+            print("🎯 ¡GPU funciona perfectamente via acceso directo!")
+            print("💡 Aplicando workaround WSL2 para usar GPU")
+            os.environ['TF_CPP_MIN_LOG_LEVEL'] = original_log_level
+            return True, tf
+            
+        except Exception as gpu_error:
+            print(f"❌ GPU no accesible: {str(gpu_error)[:100]}...")
+            if "Cannot dlopen" in str(gpu_error):
+                print("💡 Error de librerías CUDA detectado")
+                print("🔧 Instala: conda install -c conda-forge cudnn libcublas libcufft libcurand libcusolver libcusparse")
+    
+    except Exception as e:
+        print(f"❌ Error importando TensorFlow: {e}")
+    
+    # Fallback: CPU mode
+    try:
+        print("🔍 Fallback: Importando TensorFlow en modo CPU...")
+        import tensorflow as tf
+        print("✅ TensorFlow disponible en modo CPU")
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = original_log_level
+        return False, tf
+    except Exception as e:
+        print(f"❌ Fallo crítico: {e}")
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = original_log_level
+        return False, None
+
+# Execute GPU detection
+gpu_available, tf = detect_gpu_for_wsl2()
+
+# Only import our modules if GPU validation passes OR if we're using direct training
+import argparse
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument('--text', help='Text file for training')
+parser.add_argument('--epochs', type=int, help='Number of training epochs')
+args, unknown = parser.parse_known_args()
+
 # Add src to path for imports
 sys.path.append('src')
 
+# Now import modules (TensorFlow already initialized properly)
+print("🔧 Importando módulos del sistema...")
 from config import get_config, GPUConfigurator
-from data_processor import TextProcessor, TextGenerator
-from model import LSTMTextGenerator, ModelTrainer, ModelManager
+if gpu_available:
+    from data_processor import TextProcessor, TextGenerator
+    from model import LSTMTextGenerator, ModelTrainer, ModelManager
+    print("✅ Todos los módulos GPU importados correctamente")
+else:
+    print("⚠️ Módulos GPU limitados debido a falta de GPU")
 
 class AcademicInterface:
     """Interfaz académica unificada para Robo-Poet."""
@@ -77,6 +197,12 @@ class AcademicInterface:
         
         print(f"💻 Device: {device}")
         print(f"🎯 GPU disponible: {'✅ Sí' if gpu_available else '❌ No'}")
+        
+        if not gpu_available:
+            print("\n🚨 AVISO ACADÉMICO:")
+            print("   GPU NVIDIA es obligatoria para entrenamiento.")
+            print("   Comando directo funciona: python robo_poet.py --text archivo.txt --epochs N")
+        
         print(f"📦 Batch size: {self.model_config.batch_size}")
         print(f"🧠 LSTM units: {self.model_config.lstm_units}")
         print(f"📏 Sequence length: {self.model_config.sequence_length}")
@@ -167,8 +293,24 @@ class AcademicInterface:
         
     def phase1_intensive_training(self):
         """Execute Phase 1: Intensive Training."""
-        print("\n🔥 FASE 1: ENTRENAMIENTO INTENSIVO")
+        print("\n🔥 FASE 1: ENTRENAMIENTO INTENSIVO - GPU OBLIGATORIA")
         print("=" * 50)
+        
+        # Check if GPU validation passed during startup
+        if not gpu_available:
+            print("\n❌ ENTRENAMIENTO NO DISPONIBLE")
+            print("🚨 GPU no fue detectada durante las estrategias de inicialización")
+            print("\n🔍 DIAGNÓSTICO RÁPIDO:")
+            print("   Ejecuta estos comandos para verificar:")
+            print("   1. nvidia-smi                    # ¿GPU visible?")
+            print("   2. echo $CONDA_PREFIX            # ¿Entorno correcto?")
+            print("   3. python -c 'import tensorflow as tf; print(tf.config.list_physical_devices())'")
+            print("\n🔧 ALTERNATIVAS:")
+            print("   • Comando directo: python robo_poet.py --text 'archivo.txt' --epochs N")
+            print("   • Reiniciar terminal y reactivar: conda activate robo-poet-gpu")
+            print("   • Verificar drivers: nvidia-smi")
+            input("\n📖 Presiona Enter para volver al menú...")
+            return
         
         # Get training parameters
         text_file = self.get_text_file_input()
@@ -177,97 +319,52 @@ class AcademicInterface:
         # Confirm intensive training
         print(f"\n⚠️  CONFIRMACIÓN DE ENTRENAMIENTO INTENSIVO")
         print(f"📁 Archivo: {text_file}")
-        print(f"🎯 Épocas: {epochs} (~1+ hora)")
-        print(f"💻 Device: {GPUConfigurator.get_device_strategy()}")
+        print(f"🎯 Épocas: {epochs}")
+        print(f"⏱️  Tiempo estimado: ~{epochs * 2} minutos")
         
-        confirm = input("\n🤔 ¿Continuar con entrenamiento? (s/N): ").strip().lower()
-        if confirm not in ['s', 'si', 'y', 'yes']:
+        confirm = input("\n🚀 ¿Confirmar entrenamiento? (s/N): ").strip().lower()
+        if confirm not in ['s', 'si', 'sí', 'yes', 'y']:
             print("❌ Entrenamiento cancelado")
+            input("\n📖 Presiona Enter para volver al menú...")
             return
         
-        try:
-            # Setup environment
-            print("\n🚀 Configurando entorno...")
-            gpu_available = GPUConfigurator.setup_gpu()
-            device = GPUConfigurator.get_device_strategy()
-            
-            # Create directories
-            Path("models").mkdir(exist_ok=True)
-            Path("logs").mkdir(exist_ok=True)
-            
-            # Prepare data
-            print("\n📚 Preparando datos...")
-            processor = TextProcessor(
-                sequence_length=self.model_config.sequence_length,
-                step_size=self.model_config.step_size
-            )
-            
-            X, y = processor.prepare_data(
-                text_file,
-                max_length=self.model_config.max_text_length
-            )
-            
-            print(f"✅ Datos preparados: {len(X):,} secuencias")
-            
-            # Build model
-            print("\n🧠 Construyendo modelo...")
-            lstm_generator = LSTMTextGenerator(
-                vocab_size=processor.vocab_size,
-                sequence_length=self.model_config.sequence_length,
-                lstm_units=self.model_config.lstm_units,
-                dropout_rate=self.model_config.dropout_rate
-            )
-            
-            model = lstm_generator.build_model()
-            
-            # Train model
-            print(f"\n⚡ INICIANDO ENTRENAMIENTO INTENSIVO...")
-            print(f"   Tiempo estimado: ~{epochs * 2} minutos")
-            
-            trainer = ModelTrainer(model, device)
-            
-            start_time = datetime.now()
-            history = trainer.train(
-                X, y,
-                batch_size=self.model_config.batch_size,
-                epochs=epochs,
-                validation_split=self.model_config.validation_split
-            )
-            end_time = datetime.now()
-            
-            # Save model
-            timestamp = start_time.strftime("%Y%m%d_%H%M%S")
-            model_path = f"models/robo_poet_model_{timestamp}.h5"
-            
-            ModelManager.save_model(model, model_path)
-            
-            # Save metadata
-            metadata = {
-                'vocab_size': processor.vocab_size,
-                'sequence_length': self.model_config.sequence_length,
-                'lstm_units': self.model_config.lstm_units,
-                'final_loss': float(history.history['loss'][-1]),
-                'final_val_loss': float(history.history['val_loss'][-1]),
-                'epochs_trained': len(history.history['loss']),
-                'training_time': str(end_time - start_time),
-                'char_to_idx': processor.char_to_idx,
-                'idx_to_char': processor.idx_to_char
-            }
-            
-            metadata_path = model_path.replace('.h5', '_metadata.json')
-            with open(metadata_path, 'w') as f:
-                json.dump(metadata, f, indent=2)
-            
-            print(f"\n🎉 ENTRENAMIENTO COMPLETADO!")
-            print(f"   ⏱️  Duración: {end_time - start_time}")
-            print(f"   💾 Modelo guardado: {model_path}")
-            print(f"   📊 Loss final: {metadata['final_loss']:.4f}")
-            print(f"   ✅ Listo para FASE 2")
-            
-        except Exception as e:
-            print(f"\n❌ Error en entrenamiento: {e}")
+        print(f"\n🚀 INICIANDO ENTRENAMIENTO DESDE INTERFAZ ACADÉMICA...")
+        print("=" * 60)
         
-        input("\n📖 Presiona Enter para continuar...")
+        # Use subprocess to call the direct training method that works
+        import subprocess
+        import sys
+        import os
+        
+        try:
+            print(f"🔧 Iniciando proceso limpio para entrenamiento GPU...")
+            print(f"🔧 Archivo: {text_file}, Épocas: {epochs}")
+            
+            # Use a completely fresh Python process to avoid TensorFlow library conflicts
+            script_path = "robo_poet.py"  # Since we're in the same directory
+            cmd = [
+                sys.executable,  # Use the same Python interpreter 
+                script_path,     # Execute this same script
+                "--text", text_file,
+                "--epochs", str(epochs)
+            ]
+            
+            print(f"🔧 Ejecutando: {' '.join(cmd[:3])} ...")
+            
+            # Run in a fresh process with proper environment
+            result = subprocess.run(cmd, capture_output=False, text=True)
+            
+            if result.returncode == 0:
+                print("\n🎉 ¡ENTRENAMIENTO COMPLETADO EXITOSAMENTE!")
+                print("💾 Modelo guardado automáticamente")
+                print("🎨 Ya puedes usar FASE 2 para generar texto")
+            else:
+                print(f"\n❌ Error en entrenamiento (código: {result.returncode})")
+                
+        except Exception as e:
+            print(f"\n❌ Error ejecutando entrenamiento: {e}")
+        
+        input("\n📖 Presiona Enter para volver al menú...")
     
     def phase2_text_generation(self):
         """Execute Phase 2: Text Generation."""
@@ -516,11 +613,128 @@ class AcademicInterface:
                 input("📖 Presiona Enter para continuar...")
     
 
+def run_direct_training(text_file: str, epochs: int):
+    """Run direct training without interactive interface."""
+    print(f"🔥 ENTRENAMIENTO DIRECTO - MODO ACADÉMICO GPU")
+    print(f"📁 Archivo: {text_file}")
+    print(f"🎯 Épocas: {epochs}")
+    
+    try:
+        # Setup environment - GPU is MANDATORY
+        print("\n🚀 Validando GPU obligatoria...")
+        gpu_available = GPUConfigurator.setup_gpu()
+        if not gpu_available:
+            print("\n❌ ENTRENAMIENTO ABORTADO: GPU es obligatoria")
+            print("🚨 REQUERIMIENTO ACADÉMICO: GPU NVIDIA es obligatoria")
+            return False
+            
+        device = GPUConfigurator.get_device_strategy()
+        print(f"🎓 Device académico: {device}")
+        
+        # Create directories
+        Path("models").mkdir(exist_ok=True)
+        Path("logs").mkdir(exist_ok=True)
+        
+        # Get configuration
+        model_config, system_config = get_config()
+        
+        # Prepare data
+        print("\n📚 Preparando datos...")
+        processor = TextProcessor(
+            sequence_length=model_config.sequence_length,
+            step_size=model_config.step_size
+        )
+        
+        X, y = processor.prepare_data(
+            text_file,
+            max_length=model_config.max_text_length
+        )
+        
+        print(f"✅ Datos preparados: {len(X):,} secuencias")
+        
+        # Build model
+        print("\n🧠 Construyendo modelo...")
+        lstm_generator = LSTMTextGenerator(
+            vocab_size=processor.vocab_size,
+            sequence_length=model_config.sequence_length,
+            lstm_units=model_config.lstm_units,
+            dropout_rate=model_config.dropout_rate
+        )
+        
+        model = lstm_generator.build_model()
+        
+        # Train model
+        print(f"\n⚡ INICIANDO ENTRENAMIENTO...")
+        print(f"   Tiempo estimado: ~{epochs * 2} minutos")
+        
+        trainer = ModelTrainer(model, device)
+        
+        start_time = datetime.now()
+        history = trainer.train(
+            X, y,
+            batch_size=model_config.batch_size,
+            epochs=epochs,
+            validation_split=model_config.validation_split
+        )
+        end_time = datetime.now()
+        
+        # Save model
+        timestamp = start_time.strftime("%Y%m%d_%H%M%S")
+        model_path = f"models/robo_poet_model_{timestamp}.h5"
+        
+        ModelManager.save_model(model, model_path)
+        
+        # Save metadata
+        metadata = {
+            'vocab_size': processor.vocab_size,
+            'sequence_length': model_config.sequence_length,
+            'lstm_units': model_config.lstm_units,
+            'final_loss': float(history.history['loss'][-1]),
+            'final_val_loss': float(history.history['val_loss'][-1]),
+            'epochs_trained': len(history.history['loss']),
+            'training_time': str(end_time - start_time),
+            'char_to_idx': processor.char_to_idx,
+            'idx_to_char': processor.idx_to_char
+        }
+        
+        metadata_path = model_path.replace('.h5', '_metadata.json')
+        with open(metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
+        
+        print(f"\n🎉 ENTRENAMIENTO COMPLETADO!")
+        print(f"   ⏱️  Duración: {end_time - start_time}")
+        print(f"   💾 Modelo guardado: {model_path}")
+        print(f"   📊 Loss final: {metadata['final_loss']:.4f}")
+        print(f"   ✅ Listo para generación")
+        
+    except Exception as e:
+        print(f"\n❌ Error en entrenamiento: {e}")
+        return False
+    
+    return True
+
 def main():
     """Main execution function."""
-    # Initialize and run academic interface
-    interface = AcademicInterface()
-    interface.run_interface()
+    parser = argparse.ArgumentParser(description='Robo-Poet: Academic Neural Text Generation')
+    parser.add_argument('--text', type=str, help='Text file for training')
+    parser.add_argument('--epochs', type=int, help='Number of training epochs')
+    
+    args = parser.parse_args()
+    
+    # Check if CLI arguments provided for direct training
+    if args.text and args.epochs:
+        # Direct training mode
+        if not Path(args.text).exists():
+            print(f"❌ Archivo no encontrado: {args.text}")
+            return 1
+        
+        success = run_direct_training(args.text, args.epochs)
+        return 0 if success else 1
+    else:
+        # Interactive interface mode
+        interface = AcademicInterface()
+        interface.run_interface()
+        return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

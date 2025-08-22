@@ -1,0 +1,4 @@
+#!/bin/bash
+# Quick generation launcher
+cd "$(dirname "$0")"
+exec python src/robo_generate.py "$@"
