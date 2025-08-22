@@ -150,8 +150,13 @@ class RoboPoetOrchestrator:
             )
             model = model_builder.build_model()
             
-            # Train model
-            device = '/GPU:0' if self.gpu_available else '/CPU:0'
+            # Train model - GPU MANDATORY, no CPU fallback
+            if not self.gpu_available:
+                print("\n🔴 SISTEMA TERMINADO: GPU es obligatoria para este proyecto académico")
+                import sys
+                sys.exit(1)
+            
+            device = '/GPU:0'  # FIXED: Always GPU, no fallback
             trainer = ModelTrainer(model, device)
             
             history = trainer.train(

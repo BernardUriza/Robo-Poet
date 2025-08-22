@@ -11,10 +11,13 @@ from typing import Tuple, Optional
 import numpy as np
 
 class LSTMTextGenerator:
-    """LSTM-based neural network for character-level text generation."""
+    """LSTM-based neural network for character-level text generation.
+    
+    CORRECTED: Now implements 2-layer LSTM architecture per CLAUDE.md specifications.
+    """
     
     def __init__(self, vocab_size: int, sequence_length: int, 
-                 lstm_units: int = 128, dropout_rate: float = 0.2):
+                 lstm_units: int = 256, dropout_rate: float = 0.3):
         """
         Initialize LSTM text generator.
         
@@ -37,29 +40,49 @@ class LSTMTextGenerator:
         Returns:
             Compiled Keras model
         """
-        print(f"🧠 Building LSTM model...")
+        print(f"🧠 Building CORRECTED 2-layer LSTM model...")
+        print(f"   Architecture: 2 x 256-unit LSTM layers (per CLAUDE.md)")
         print(f"   Vocab size: {self.vocab_size}")
         print(f"   Sequence length: {self.sequence_length}")
-        print(f"   LSTM units: {self.lstm_units}")
+        print(f"   LSTM units: 256 (FIXED from {self.lstm_units})")
+        print(f"   Dropout: 0.3 (regularization improved)")
         print(f"   JIT Compilation: Habilitado con libdevice")
         
         # Input layer
         inputs = layers.Input(shape=(self.sequence_length, self.vocab_size))
         
-        # LSTM layers with dropout
-        lstm_out = layers.LSTM(
-            self.lstm_units,
-            dropout=self.dropout_rate,
-            return_sequences=False,
-            name='lstm_layer'
+        # CORRECTED: 2-layer LSTM architecture per CLAUDE.md specifications
+        
+        # LSTM Layer 1 - 256 units with return_sequences=True
+        lstm_1_out = layers.LSTM(
+            units=256,  # FIXED: Was self.lstm_units (128), must be 256
+            return_sequences=True,  # CRITICAL: Must return sequences for next layer
+            dropout=0.3,
+            recurrent_dropout=0.3,
+            name='lstm_layer_1'
         )(inputs)
+        
+        # Dropout after LSTM 1
+        dropout_1 = layers.Dropout(0.3, name='dropout_1')(lstm_1_out)
+        
+        # LSTM Layer 2 - 256 units with return_sequences=True  
+        lstm_2_out = layers.LSTM(
+            units=256,  # Maintain 256 units per spec
+            return_sequences=True,  # For sequential generation
+            dropout=0.3,
+            recurrent_dropout=0.3,
+            name='lstm_layer_2'
+        )(dropout_1)
+        
+        # Dropout after LSTM 2
+        dropout_2 = layers.Dropout(0.3, name='dropout_2')(lstm_2_out)
         
         # Output layer with softmax activation
         outputs = layers.Dense(
             self.vocab_size,
             activation='softmax',
             name='output_layer'
-        )(lstm_out)
+        )(dropout_2)
         
         # Create model
         self.model = Model(inputs=inputs, outputs=outputs, name='lstm_text_generator')
@@ -104,7 +127,7 @@ class LSTMTextGenerator:
 class ModelTrainer:
     """Handles model training with callbacks and monitoring."""
     
-    def __init__(self, model: Model, device: str = '/CPU:0'):
+    def __init__(self, model: Model, device: str = '/GPU:0'):
         """
         Initialize model trainer.
         

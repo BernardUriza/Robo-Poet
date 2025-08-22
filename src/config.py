@@ -18,8 +18,8 @@ import tensorflow as tf
 class ModelConfig:
     """Model architecture hyperparameters."""
     
-    # LSTM Architecture
-    lstm_units: int = 128
+    # LSTM Architecture - CORRECTED per CLAUDE.md specs
+    lstm_units: int = 256  # FIXED: Was 128, must be 256 per academic specs
     sequence_length: int = 40
     embedding_dim: Optional[int] = None  # Will be set to vocab_size
     dropout_rate: float = 0.2
@@ -108,17 +108,58 @@ class GPUConfigurator:
     @staticmethod
     def get_device_strategy() -> str:
         """
-        Determine optimal device strategy.
-        REQUIREMENT: GPU is mandatory for academic purposes.
+        Obtiene string del dispositivo GPU.
+        Sistema termina si GPU no está disponible.
         
         Returns:
-            str: Device string ('/GPU:0' if available, '/CPU:0' if forced)
+            str: Always '/GPU:0' - terminates if GPU unavailable
         """
         gpus = tf.config.experimental.list_physical_devices('GPU')
         
         if not gpus:
-            return '/CPU:0'  # Return CPU as fallback
+            # Verificar que CUDA_VISIBLE_DEVICES no esté vacío
+            cuda_visible = os.environ.get('CUDA_VISIBLE_DEVICES', '')
+            if cuda_visible == '':
+                # CUDA_VISIBLE_DEVICES vacío = no GPU forzado
+                print("🚫 CUDA_VISIBLE_DEVICES=\"\" - GPU forzadamente deshabilitada")
+                # TERMINAR SISTEMA - NO HAY FALLBACK
+                print("\n" + "="*60)
+                print("🔴 ERROR CRÍTICO: GPU DESHABILITADA")
+                print("="*60)
+                print("\nEste proyecto REQUIERE GPU para cumplir requisitos académicos.")
+                print("CUDA_VISIBLE_DEVICES está vacío - GPU forzadamente deshabilitada.")
+                print("\n" + "="*60)
+                import sys
+                sys.exit(1)
+            
+            # Intentar detección WSL2 solo si GPU podría estar disponible
+            try:
+                with tf.device('/GPU:0'):
+                    test = tf.constant([1.0])
+                    _ = tf.reduce_sum(test)
+                print("✅ GPU detectada via workaround WSL2")
+                return '/GPU:0'
+            except Exception as e:
+                # TERMINAR SISTEMA - NO HAY FALLBACK
+                print("\n" + "="*60)
+                print("🔴 ERROR CRÍTICO: GPU NO DISPONIBLE")
+                print("="*60)
+                print("\nEste proyecto REQUIERE GPU para cumplir requisitos académicos.")
+                print("\nSoluciones:")
+                print("1. Verificar driver NVIDIA: nvidia-smi")
+                print("2. Activar entorno conda: conda activate robo-poet-gpu")
+                print("3. Verificar CUDA: python -c 'import tensorflow as tf; print(tf.config.list_physical_devices(\"GPU\"))'")
+                print("\nSi estás en WSL2, asegúrate de:")
+                print("- Tener Windows 11 o Windows 10 build 21H2+")
+                print("- Driver NVIDIA actualizado en Windows (no en WSL2)")
+                print("- nvidia-smi funciona desde WSL2")
+                print("\n" + "="*60)
+                
+                # TERMINAR EJECUCIÓN
+                import sys
+                sys.exit(1)
         
+        # GPU detectada exitosamente
         return '/GPU:0'
 
 @dataclass
