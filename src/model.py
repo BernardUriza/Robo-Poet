@@ -137,7 +137,7 @@ class ModelTrainer:
         print(f"   Validation split: {validation_split:.1%}")
         
         # Setup callbacks
-        callbacks = self._setup_callbacks()
+        callbacks = self._setup_callbacks(patience=10)
         
         # Train on specified device
         with tf.device(self.device):
@@ -159,9 +159,12 @@ class ModelTrainer:
         
         return self.history
     
-    def _setup_callbacks(self) -> list:
+    def _setup_callbacks(self, patience: int = 10) -> list:
         """
         Setup training callbacks.
+        
+        Args:
+            patience: Early stopping patience
         
         Returns:
             List of Keras callbacks
@@ -169,15 +172,22 @@ class ModelTrainer:
         callbacks = [
             tf.keras.callbacks.EarlyStopping(
                 monitor='val_loss',
-                patience=3,
+                patience=patience,
                 restore_best_weights=True,
                 verbose=1
             ),
             tf.keras.callbacks.ReduceLROnPlateau(
                 monitor='val_loss',
                 factor=0.5,
-                patience=2,
+                patience=patience//2,
                 min_lr=1e-6,
+                verbose=1
+            ),
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath='models/checkpoint_epoch_{epoch:02d}_loss_{val_loss:.4f}.h5',
+                monitor='val_loss',
+                save_best_only=True,
+                save_weights_only=False,
                 verbose=1
             )
         ]

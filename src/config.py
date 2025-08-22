@@ -22,9 +22,10 @@ class ModelConfig:
     
     # Training hyperparameters
     batch_size: int = 128
-    epochs: int = 5
+    epochs: int = 50  # Entrenamiento intensivo de 1 hora
     learning_rate: float = 0.001
     validation_split: float = 0.2
+    early_stopping_patience: int = 10  # Más paciencia para entrenamientos largos
     
     # Text processing
     max_text_length: int = 100_000

@@ -1,6 +1,8 @@
-# robo-poet - Generador de Texto con TensorFlow
+# 🎓 Robo-Poet - Interfaz Académica para Generación de Texto
 
-Implementación educacional de un generador de texto basado en LSTM usando TensorFlow 2.20, optimizado para GPUs NVIDIA RTX 2000 Ada con Kali Linux en WSL2.
+**Implementación educacional completa** de un generador de texto basado en LSTM usando TensorFlow 2.20, optimizado para GPUs NVIDIA RTX 2000 Ada con Kali Linux en WSL2.
+
+**Nueva Arquitectura v2.0**: Interfaz académica unificada con sistema de dos fases separadas para entrenamiento intensivo y generación de texto.
 
 ## 🚀 Inicio Rápido
 
@@ -13,76 +15,135 @@ conda activate robo-poet-gpu
 export CUDA_HOME=$CONDA_PREFIX
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 
-# Ejecutar robo-poet
-python robo_poet.py --text "The+48+Laws+Of+Power_texto.txt" --epochs 5
+# Ejecutar interfaz académica unificada
+python robo_poet.py
 ```
 
-## Flujo Académico del Proyecto
+### 🎯 Nuevo Sistema de Dos Fases
+
+1. **🔥 FASE 1**: Entrenamiento Intensivo (1+ hora) - Crea modelos robustos
+2. **🎨 FASE 2**: Generación de Texto - Usa modelos pre-entrenados instantáneamente
+
+## 🎓 Arquitectura Académica v2.0 - Sistema de Dos Fases
 
 ```mermaid
 flowchart TD
-    A[📚 Inicio del Proyecto Académico] --> B[🔧 Configuración del Entorno]
-    B --> C[📊 Análisis Exploratorio del Corpus]
-    C --> D[🧹 Preparación de Datos]
-    D --> E[🏗️ Construcción del Modelo]
-    E --> F[🎯 Entrenamiento Supervisado]
-    F --> G[📝 Generación y Evaluación]
-    G --> H[📈 Análisis de Resultados]
+    A[🎓 Robo-Poet Academic Interface v2.0] --> B[🎯 Menú Principal]
     
-    B --> B1[Sistema Base: Kali Linux WSL2]
-    B --> B2[GPU: NVIDIA RTX 2000 Ada]
-    B --> B3[Stack: TensorFlow 2.20 + CUDA 12.2]
-    B --> B4[Entorno: Conda + Python 3.10]
+    B --> C[🔥 FASE 1: Entrenamiento Intensivo]
+    B --> D[🎨 FASE 2: Generación de Texto]
+    B --> E[📊 Ver Modelos Disponibles]
+    B --> F[📈 Monitorear Progreso]
+    B --> G[⚙️ Configuración del Sistema]
     
-    C --> C1[Estadísticas Básicas<br/>- Conteo de tokens<br/>- Distribución de longitudes<br/>- Frecuencia de n-gramas]
-    C --> C2[Identificación de Patrones<br/>- Estructuras sintácticas<br/>- Vocabulario especializado<br/>- Ratio type/token]
+    %% FASE 1 - Entrenamiento Intensivo
+    C --> C1[📁 Selección de Corpus]
+    C1 --> C2[🎯 Configuración de Épocas]
+    C2 --> C3[⚠️ Confirmación de Entrenamiento]
+    C3 --> C4[🚀 Setup de GPU]
+    C4 --> C5[📚 Preparación de Datos]
+    C5 --> C6[🧠 Construcción de Modelo LSTM]
+    C6 --> C7[⚡ Entrenamiento Intensivo 1+ hora]
+    C7 --> C8[💾 Guardado Automático con Timestamp]
+    C8 --> C9[📋 Metadata JSON Completa]
     
-    D --> D1[Limpieza de Texto<br/>- Normalización Unicode<br/>- Eliminación de caracteres no imprimibles<br/>- Manejo de espacios/tabs]
-    D --> D2[Creación de Secuencias<br/>- Ventana deslizante<br/>- Longitud: 100 tokens<br/>- Overlap: 50%]
-    D --> D3[División de Datos<br/>- Train: 80%<br/>- Validation: 10%<br/>- Test: 10%]
+    %% FASE 2 - Generación de Texto
+    D --> D1[📋 Lista de Modelos Disponibles]
+    D1 --> D2[🎯 Selección de Modelo]
+    D2 --> D3[📁 Carga de Modelo + Metadata]
+    D3 --> D4[🎨 Menú de Generación]
     
-    E --> E1[Arquitectura LSTM<br/>- Embedding: 128 dim<br/>- LSTM: 256 units x2<br/>- Dropout: 0.3]
-    E --> E2[Optimizaciones RTX 2000<br/>- Mixed Precision FP16<br/>- Memory Growth<br/>- Tensor Cores]
+    D4 --> D4A[📝 Generación Simple]
+    D4 --> D4B[🎮 Modo Interactivo]
+    D4 --> D4C[📊 Generación en Lote]
     
-    F --> F1[Hiperparámetros<br/>- Learning Rate: 0.001<br/>- Batch Size: 64<br/>- Epochs: 10-15]
-    F --> F2[Monitoreo<br/>- TensorBoard<br/>- Loss/Perplexity<br/>- Early Stopping]
+    D4A --> D5[🌡️ Control Temperature/Length]
+    D4B --> D6[🔄 Generación Continua]
+    D4C --> D7[📈 Múltiples Seeds]
     
-    G --> G1[Estrategias de Sampling<br/>- Greedy<br/>- Temperature<br/>- Top-k/Top-p]
-    G --> G2[Métricas<br/>- BLEU Score<br/>- Diversidad<br/>- Coherencia]
+    %% Sistema de Monitoreo
+    F --> F1[🔍 Checkpoints Activos]
+    F1 --> F2[📅 Estado de Entrenamientos]
+    F2 --> F3[📊 TensorBoard Logs]
     
-    H --> H1[🎓 Conceptos Aprendidos]
-    H --> H2[🛠️ Template para Futuros Proyectos]
+    %% Configuración del Sistema
+    G --> G1[💻 Estado de GPU]
+    G1 --> G2[🎛️ Hiperparámetros]
+    G2 --> G3[📋 Información del Hardware]
     
-    style A fill:#e1f5fe
-    style H1 fill:#e8f5e8
-    style H2 fill:#fff3e0
-    style B1 fill:#f3e5f5
-    style B2 fill:#f3e5f5
-    style B3 fill:#f3e5f5
-    style B4 fill:#f3e5f5
+    %% Arquitectura del Sistema
+    subgraph "🏗️ Arquitectura Modular"
+        H[src/config.py<br/>Configuración GPU/Modelo]
+        I[src/data_processor.py<br/>Procesamiento y Generación]
+        J[src/model.py<br/>LSTM + Training + Management]
+        K[robo_poet.py<br/>Interfaz Académica Unificada]
+    end
+    
+    %% Flujo de Datos
+    C9 --> L[models/robo_poet_model_TIMESTAMP.h5]
+    C9 --> M[models/robo_poet_model_TIMESTAMP_metadata.json]
+    L --> D1
+    M --> D1
+    
+    %% Características Técnicas
+    subgraph "🔧 Stack Tecnológico Verificado"
+        N[Kali Linux WSL2]
+        O[NVIDIA RTX 2000 Ada - 8GB VRAM]
+        P[TensorFlow 2.20 + CUDA 12.2]
+        Q[Python 3.10 + Conda Environment]
+    end
+    
+    %% Optimizaciones
+    subgraph "⚡ Optimizaciones RTX 2000 Ada"
+        R[Mixed Precision FP16]
+        S[Memory Growth Dynamic]
+        T[Checkpoints Automáticos]
+        U[Early Stopping Inteligente]
+    end
+    
+    style A fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    style C fill:#ffebee,stroke:#c62828,stroke-width:2px
+    style D fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    style F fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style G fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    
+    style C7 fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px
+    style D6 fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    style K fill:#e1f5fe,stroke:#0277bd,stroke-width:3px
 ```
 
-## Marco Académico y Metodológico
+## 🎓 Marco Académico y Metodológico v2.0
 
-Este proyecto sirve como un **template educacional completo** para el desarrollo de proyectos de Machine Learning en entornos Linux especializados como Kali Linux. La metodología implementada abarca desde los fundamentos teóricos hasta la optimización práctica en hardware específico.
+Este proyecto representa una **evolución hacia una interfaz académica unificada** que separa claramente las fases de entrenamiento y generación, proporcionando un flujo de trabajo más profesional y educativo.
 
-### Conceptos Académicos Cubiertos
+### 🆕 Nuevas Características v2.0
 
-- **Arquitecturas de Redes Neuronales**: LSTM, Embeddings, y fundamentos de Transformers
-- **Optimización de GPU**: Mixed Precision, Tensor Cores, y gestión de memoria VRAM
-- **Procesamiento de Lenguaje Natural**: Tokenización, vocabulario, y métricas de evaluación
-- **Ingeniería de Software**: Entornos virtuales, control de versiones, y debugging sistemático
-- **Sistemas Linux**: Configuración de drivers, gestión de dependencias, y troubleshooting
+- **🎯 Interfaz Unificada**: Un solo punto de entrada (`python robo_poet.py`)
+- **📱 Menú Interactivo**: Navegación académica intuitiva
+- **🔄 Sistema de Dos Fases**: Separación clara entre entrenamiento y generación
+- **📊 Monitoreo Avanzado**: Seguimiento de progreso y modelos disponibles
+- **💾 Gestión Automática**: Guardado inteligente con metadata completa
+- **🎨 Generación Versátil**: Modos simple, interactivo y en lote
 
-### Template para Proyectos en Kali Linux
+### 🧠 Conceptos Académicos Cubiertos
 
-Esta implementación establece un **patrón replicable** para proyectos de ML en Kali Linux que incluye:
+- **🏗️ Arquitecturas de Redes Neuronales**: LSTM, Embeddings, y fundamentos de Transformers
+- **⚡ Optimización de GPU**: Mixed Precision, Tensor Cores, y gestión de memoria VRAM
+- **📝 Procesamiento de Lenguaje Natural**: Tokenización, vocabulario, y métricas de evaluación
+- **🛠️ Ingeniería de Software**: Interfaces académicas, modularización, y debugging sistemático
+- **🐧 Sistemas Linux**: Configuración de drivers, gestión de dependencias, y troubleshooting
+- **🎓 Metodología Académica**: Separación de fases, documentación automática, y reproducibilidad
 
-1. **Stack Tecnológico Verificado**: Combinación probada de conda + CUDA + TensorFlow
-2. **Metodología de Configuración**: Scripts automatizados para setup del entorno GPU
-3. **Flujo de Desarrollo**: Desde análisis exploratorio hasta evaluación de modelos
-4. **Herramientas de Debugging**: Verificación sistemática de componentes del sistema
-5. **Optimizaciones Específicas**: Configuraciones adaptadas para hardware NVIDIA en WSL2
+### 🚀 Template Académico para Proyectos ML
+
+Esta implementación v2.0 establece un **patrón académico replicable** para proyectos de ML que incluye:
+
+1. **🎯 Interfaz Académica Unificada**: Sistema de menús interactivos profesionales
+2. **🔄 Metodología de Dos Fases**: Separación clara entre entrenamiento e inferencia
+3. **📊 Monitoreo Académico**: Seguimiento de progreso y gestión de modelos
+4. **💾 Gestión Inteligente**: Guardado automático con metadata académica completa
+5. **🎨 Generación Versátil**: Múltiples modos de generación para diferentes necesidades
+6. **📱 Experiencia de Usuario**: Interfaz limpia y educativa para estudiantes
 
 ## Requisitos del Sistema
 
@@ -472,76 +533,83 @@ chmod +x verify_setup.py
 python verify_setup.py
 ```
 
-## Uso Básico
+## 💼 Uso de la Interfaz Académica v2.0
 
-### Estructura del Proyecto
+### 🗂️ Estructura del Proyecto (Nueva Arquitectura)
 
 ```
 robo-poet/
-├── data/
-│   ├── raw/           # Textos originales (.txt)
-│   ├── processed/     # Datos preprocesados
-│   └── vocab/         # Vocabulario y tokenizer
-├── models/
-│   ├── checkpoints/   # Checkpoints durante entrenamiento
-│   └── final/         # Modelo final entrenado
-├── src/
-│   ├── preprocessing.py
-│   ├── model.py
-│   ├── train.py
-│   └── generate.py
-├── logs/              # TensorBoard logs
-├── scripts/           # Scripts auxiliares
-│   └── setup_gpu.sh   # Configuración GPU
-└── robo_poet.py      # CLI principal
+├── 📁 src/                           # Módulos core del sistema
+│   ├── __init__.py                   # Inicialización del paquete
+│   ├── config.py                     # Configuración GPU y modelo
+│   ├── data_processor.py             # Procesamiento y generación
+│   └── model.py                      # LSTM + Training + Management
+├── 📁 models/                        # Modelos entrenados
+│   ├── robo_poet_model_TIMESTAMP.h5  # Modelos con timestamp
+│   └── *_metadata.json               # Metadata académica completa
+├── 📁 logs/                          # TensorBoard logs
+├── 📁 data/ (opcional)               # Datasets organizados
+├── 📄 robo_poet.py                   # 🎯 INTERFAZ ACADÉMICA PRINCIPAL
+├── 📄 The+48+Laws+Of+Power_texto.txt # Corpus de ejemplo
+├── 📄 CLAUDE.md                      # Metodología académica
+└── 📄 readme.md                      # Documentación completa
 ```
 
-### Comandos CLI
+### 🎮 Uso de la Interfaz Académica
 
-#### Entrenamiento
+#### 🚀 Inicio del Sistema
 
 ```bash
-# Activar entorno virtual
-source venv/bin/activate
+# Activar entorno conda
+eval "$($HOME/miniconda3/bin/conda shell.bash hook)"
+conda activate robo-poet-gpu
 
-# Entrenamiento básico
-python robo_poet.py train --data data/raw/texto.txt
+# Configurar variables CUDA
+export CUDA_HOME=$CONDA_PREFIX
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 
-# Entrenamiento con parámetros personalizados
-python robo_poet.py train \
-    --data data/raw/texto.txt \
-    --epochs 10 \
-    --batch-size 32 \
-    --learning-rate 0.001 \
-    --lstm-units 256 \
-    --embedding-dim 128 \
-    --checkpoint-dir models/checkpoints
+# Ejecutar interfaz académica unificada
+python robo_poet.py
 ```
 
-#### Generación de Texto
+#### 🎯 Flujo de Trabajo Académico
+
+**Primera Sesión (Entrenamiento):**
+1. Ejecuta `python robo_poet.py`
+2. Selecciona `1. 🔥 FASE 1: Entrenamiento Intensivo`
+3. Configura archivo de texto y épocas
+4. Confirma entrenamiento (1+ hora)
+5. El sistema guarda automáticamente el modelo
+
+**Sesiones Posteriores (Generación):**
+1. Ejecuta `python robo_poet.py`
+2. Selecciona `2. 🎨 FASE 2: Generación de Texto`
+3. Elige modelo pre-entrenado
+4. Selecciona modo de generación (simple/interactivo/lote)
+
+**Monitoreo:**
+- Opción `4. 📈 Monitorear Progreso` para ver entrenamientos activos
+- Opción `3. 📊 Ver Modelos` para gestionar modelos disponibles
+
+#### 📊 Monitoreo con TensorBoard
 
 ```bash
-# Generación simple
-python robo_poet.py generate \
-    --model models/final/model.h5 \
-    --seed "En un lugar" \
-    --length 200 \
-    --temperature 0.8
-
-# Modo interactivo
-python robo_poet.py generate --model models/final/model.h5 --interactive
-```
-
-#### Monitoreo con TensorBoard
-
-```bash
-# En terminal separada
+# En terminal separada (mientras entrenas)
 tensorboard --logdir logs --port 6006 --bind_all
 
 # Acceder desde navegador
 # http://localhost:6006
 # O desde otra máquina: http://[IP-DE-KALI]:6006
 ```
+
+#### 🎓 Características Académicas Destacadas
+
+- **📱 Interfaz Unificada**: Todo desde un solo comando
+- **🔄 Separación de Fases**: Entrenamiento vs. Generación claramente diferenciados
+- **💾 Gestión Automática**: Guardado inteligente con timestamps y metadata
+- **📊 Monitoreo Avanzado**: Seguimiento de progreso y modelos disponibles
+- **🎨 Generación Versátil**: Múltiples modos (simple, interactivo, lote)
+- **⚙️ Configuración Transparente**: Información del sistema siempre accesible
 
 ## Preparación de Datos
 
@@ -705,18 +773,20 @@ nvtop
 nvidia-smi --query-gpu=timestamp,name,pci.bus_id,driver_version,pstate,pcie.link.gen.max,pcie.link.gen.current,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv -l 1
 ```
 
-## Benchmarks Esperados
+## 📊 Benchmarks Esperados (RTX 2000 Ada + Interfaz v2.0)
 
 Con configuración óptima en RTX 2000 Ada (Kali Linux):
 
-| Métrica | Valor |
-|---------|-------|
-| Tokens/segundo (training) | 18,000-22,000 |
-| Batch size máximo | 32 (seq_len=100) |
-| Tiempo/época (10MB dataset) | 7-10 minutos |
-| Memoria GPU utilizada | 6.2-7.3 GB |
-| Temperatura GPU | 65-75°C |
-| Power draw | 120-140W |
+| Métrica | Valor | Contexto Académico |
+|---------|-------|--------------------|
+| Tokens/segundo (training) | 18,000-22,000 | FASE 1: Entrenamiento Intensivo |
+| Batch size máximo | 128 (seq_len=40) | Optimizado para 8GB VRAM |
+| Tiempo/época (10MB dataset) | 5-8 minutos | ~50 épocas = 4-7 horas |
+| Memoria GPU utilizada | 6.5-7.8 GB | Monitoreable desde la interfaz |
+| Temperatura GPU | 65-75°C | Visible en configuración del sistema |
+| Power draw | 120-140W | Rendimiento máximo RTX 2000 Ada |
+| **Tiempo FASE 1 completa** | **1-3 horas** | **Entrenamiento intensivo académico** |
+| **Tiempo FASE 2 (generación)** | **< 1 segundo** | **Inferencia instantánea** |
 
 ## Seguridad y Mejores Prácticas
 
@@ -747,23 +817,56 @@ EOF
 chmod +x scripts/backup_model.sh
 ```
 
-## Recursos Adicionales
+## 📚 Recursos Adicionales
 
-### Documentación
+### 📖 Documentación Técnica
 - [TensorFlow GPU Support](https://www.tensorflow.org/install/gpu)
 - [NVIDIA CUDA on Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
 - [Kali Linux NVIDIA Drivers](https://www.kali.org/docs/general-use/install-nvidia-drivers-on-kali-linux/)
+- **CLAUDE.md**: Metodología académica completa incluida en el proyecto
 
-### Herramientas Útiles
+### 🛠️ Herramientas de Monitoreo
 - `nvtop`: Monitor GPU interactivo
 - `gpustat`: Estado GPU en terminal
 - `tensorflow-profiler`: Profiling detallado
+- **Interfaz v2.0**: Monitoreo integrado en el menú principal
 
-### Comunidad
+### 👥 Comunidad Académica
 - TensorFlow Forum: discuss.tensorflow.org
 - NVIDIA Developer Forums: forums.developer.nvidia.com
 - Kali Linux Forums: forums.kali.org
+- **Issues**: Para reportar problemas o mejoras del proyecto
 
-## Licencia
+### 🎯 Casos de Uso Académicos
+- **Cursos de NLP**: Implementación práctica de LSTM para generación de texto
+- **Investigación en ML**: Base sólida para experimentos con arquitecturas neuronales
+- **Tesis de Grado**: Template completo para proyectos de texto generativo
+- **Workshops**: Interfaz académica lista para demostraciones educativas
 
-MIT License - Proyecto educacional de código abierto.
+## 🎓 Evolución del Proyecto
+
+### v1.0 → v2.0: Transformación Académica
+
+**v1.0 (Anterior):**
+- Scripts separados para entrenamiento y generación
+- CLI con argumentos complejos
+- Gestión manual de modelos
+
+**v2.0 (Actual):**
+- ✅ **Interfaz académica unificada**
+- ✅ **Sistema de dos fases bien definidas**
+- ✅ **Menús interactivos profesionales**
+- ✅ **Gestión automática de modelos**
+- ✅ **Monitoreo de progreso integrado**
+- ✅ **Root folder limpio y organizado**
+
+### 🚀 Próximas Mejoras
+
+- 📊 Integración de métricas de evaluación automática
+- 🎯 Fine-tuning de modelos pre-entrenados
+- 📱 Interfaz web académica opcional
+- 🔄 Export a diferentes formatos (ONNX, TensorFlow Lite)
+
+## 📜 Licencia
+
+MIT License - Proyecto educacional de código abierto para estudiantes de ML.
