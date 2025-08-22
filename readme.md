@@ -2,7 +2,7 @@
 
 **Implementación educacional completa** de un generador de texto basado en LSTM usando TensorFlow 2.20, optimizado para GPUs NVIDIA RTX 2000 Ada con Kali Linux en WSL2.
 
-**Nueva Arquitectura v2.0**: Interfaz académica unificada con sistema de dos fases separadas para entrenamiento intensivo y generación de texto.
+**Nueva Arquitectura v2.1**: Interfaz académica unificada con sistema de dos fases mejoradas - entrenamiento intensivo y generación avanzada con 8 modos especializados.
 
 ## 🚀 Inicio Rápido
 
@@ -87,11 +87,11 @@ conda install -c conda-forge cudnn libcublas libcufft libcurand libcusolver libc
 - **📈 Análisis Avanzado**: Estadísticas detalladas del modelo y recomendaciones de uso
 - **💾 Gestión Completa**: Guardado automático con metadata y visualización de archivos
 
-## 🎓 Arquitectura Académica v2.0 - Sistema de Dos Fases
+## 🎓 Arquitectura Académica v2.1 - Sistema de Dos Fases Mejorado
 
 ```mermaid
 flowchart TD
-    A[🎓 Robo-Poet Academic Interface v2.0] --> B[🎯 Menú Principal]
+    A[🎓 Robo-Poet Academic Interface v2.1] --> B[🎯 Menú Principal]
     
     B --> C[🔥 FASE 1: Entrenamiento Intensivo]
     B --> D[🎨 FASE 2: Generación de Texto]
@@ -175,11 +175,11 @@ flowchart TD
     style K fill:#e1f5fe,stroke:#0277bd,stroke-width:3px
 ```
 
-## 🎓 Marco Académico y Metodológico v2.0
+## 🎓 Marco Académico y Metodológico v2.1
 
 Este proyecto representa una **evolución hacia una interfaz académica unificada** que separa claramente las fases de entrenamiento y generación, proporcionando un flujo de trabajo más profesional y educativo.
 
-### 🆕 Nuevas Características v2.0
+### 🆕 Nuevas Características v2.1
 
 - **🎯 Interfaz Unificada**: Un solo punto de entrada (`python robo_poet.py`)
 - **📱 Menú Interactivo**: Navegación académica intuitiva
@@ -199,7 +199,7 @@ Este proyecto representa una **evolución hacia una interfaz académica unificad
 
 ### 🚀 Template Académico para Proyectos ML
 
-Esta implementación v2.0 establece un **patrón académico replicable** para proyectos de ML que incluye:
+Esta implementación v2.1 establece un **patrón académico replicable** para proyectos de ML que incluye:
 
 1. **🎯 Interfaz Académica Unificada**: Sistema de menús interactivos profesionales
 2. **🔄 Metodología de Dos Fases**: Separación clara entre entrenamiento e inferencia
@@ -596,7 +596,7 @@ chmod +x verify_setup.py
 python verify_setup.py
 ```
 
-## 💼 Uso de la Interfaz Académica v2.0
+## 💼 Uso de la Interfaz Académica v2.1
 
 ### 🗂️ Estructura del Proyecto (Limpia y Organizada)
 
@@ -860,7 +860,7 @@ watch -n 1 nvidia-smi
 nvidia-smi dmon -s u -d 1
 ```
 
-## 📊 Benchmarks Esperados (RTX 2000 Ada + Interfaz v2.0)
+## 📊 Benchmarks Esperados (RTX 2000 Ada + Interfaz v2.1)
 
 Con configuración óptima en RTX 2000 Ada (Kali Linux):
 
@@ -916,7 +916,7 @@ chmod +x scripts/backup_model.sh
 - `nvtop`: Monitor GPU interactivo
 - `gpustat`: Estado GPU en terminal
 - `tensorflow-profiler`: Profiling detallado
-- **Interfaz v2.0**: Monitoreo integrado en el menú principal
+- **Interfaz v2.1**: Monitoreo integrado en el menú principal
 
 ### 👥 Comunidad Académica
 - TensorFlow Forum: discuss.tensorflow.org
@@ -932,20 +932,27 @@ chmod +x scripts/backup_model.sh
 
 ## 🎓 Evolución del Proyecto
 
-### v1.0 → v2.0: Transformación Académica
+### v1.0 → v2.1: Evolución Académica Completa
 
-**v1.0 (Anterior):**
+**v1.0 (Inicial):**
 - Scripts separados para entrenamiento y generación
 - CLI con argumentos complejos
 - Gestión manual de modelos
 
-**v2.0 (Actual):**
-- ✅ **Interfaz académica unificada**
-- ✅ **Sistema de dos fases bien definidas**
-- ✅ **Menús interactivos profesionales**
-- ✅ **Gestión automática de modelos**
-- ✅ **Monitoreo de progreso integrado**
-- ✅ **Root folder limpio y organizado**
+**v2.0 (Intermedia):**
+- Interfaz académica unificada
+- Sistema de dos fases básico
+- Menús interactivos profesionales
+
+**v2.1 (Actual):**
+- ✅ **Interfaz académica unificada mejorada**
+- ✅ **Sistema de dos fases optimizado**
+- ✅ **8 modos de generación especializados**
+- ✅ **Gestión automática de modelos con metadata**
+- ✅ **Monitoreo de progreso en tiempo real**
+- ✅ **Análisis avanzado y estadísticas**
+- ✅ **Plantillas temáticas y presets**
+- ✅ **Experimentos en lote automatizados**
 
 ### 🚀 Próximas Mejoras
 
