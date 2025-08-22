@@ -121,11 +121,24 @@ class GPUConfigurator:
         
         return '/GPU:0'
 
-def get_config() -> Tuple[ModelConfig, SystemConfig]:
+@dataclass
+class Config:
+    """Combined configuration object."""
+    model: ModelConfig
+    system: SystemConfig
+    training: ModelConfig  # Alias for backward compatibility
+
+def get_config() -> Config:
     """
     Factory function to create configuration objects.
     
     Returns:
-        Tuple containing ModelConfig and SystemConfig instances.
+        Config object with model and system configurations.
     """
-    return ModelConfig(), SystemConfig()
+    model_config = ModelConfig()
+    system_config = SystemConfig()
+    return Config(
+        model=model_config,
+        system=system_config,
+        training=model_config  # Alias for training config
+    )
