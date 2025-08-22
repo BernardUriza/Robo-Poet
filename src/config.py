@@ -24,16 +24,18 @@ class ModelConfig:
     embedding_dim: Optional[int] = None  # Will be set to vocab_size
     dropout_rate: float = 0.2
     
-    # Training hyperparameters
-    batch_size: int = 128
-    epochs: int = 50  # Entrenamiento intensivo de 1 hora
+    # Training hyperparameters - STRATEGY 1.3: Intensive training
+    batch_size: int = 64  # Strategy 1.4: Reduced from 128 to 64 for 5000-vocab + 8GB VRAM optimization
+    epochs: int = 100  # Strategy 1.3: Increased from 50 to 100+ for intensive training
     learning_rate: float = 0.001
     validation_split: float = 0.2
-    early_stopping_patience: int = 10  # Más paciencia para entrenamientos largos
+    early_stopping_patience: int = 15  # Increased patience for longer training
     
-    # Text processing
-    max_text_length: int = 100_000
+    # Text processing - STRATEGY 1.1: Expanded vocabulary
+    max_text_length: int = 50_000_000  # Strategy 1.5: Increased to 50MB for larger corpus
     step_size: int = 3  # Stride for sequence generation
+    vocab_size: int = 5000  # Expanded from 44 chars to 5000 tokens
+    tokenization: str = 'word'  # 'word' or 'char' level tokenization
 
 @dataclass
 class SystemConfig:

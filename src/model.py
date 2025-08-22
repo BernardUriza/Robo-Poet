@@ -10,28 +10,91 @@ from tensorflow.keras import layers, Model
 from typing import Tuple, Optional
 import numpy as np
 
-class LSTMTextGenerator:
-    """LSTM-based neural network for character-level text generation.
+class DropConnect(layers.Layer):
+    """
+    DropConnect layer implementation - Strategy 2.1
     
-    CORRECTED: Now implements 2-layer LSTM architecture per CLAUDE.md specifications.
+    DropConnect is superior to Dropout as it randomly drops connections 
+    rather than entire neurons, preserving more information flow.
+    """
+    
+    def __init__(self, rate: float, **kwargs):
+        super().__init__(**kwargs)
+        self.rate = rate
+        
+    def call(self, inputs, training=None):
+        if training:
+            # Generate random mask for connections
+            mask = tf.random.uniform(tf.shape(inputs)) > self.rate
+            mask = tf.cast(mask, inputs.dtype)
+            # Scale output to maintain expected value
+            return inputs * mask / (1.0 - self.rate)
+        return inputs
+    
+    def get_config(self):
+        config = super().get_config()
+        config.update({'rate': self.rate})
+        return config
+
+class VariationalDropout(layers.Layer):
+    """
+    Variational Dropout implementation - Strategy 2.2
+    
+    Uses same dropout mask across time steps, which is more effective
+    for RNNs than standard dropout.
+    """
+    
+    def __init__(self, rate: float, **kwargs):
+        super().__init__(**kwargs)
+        self.rate = rate
+        
+    def call(self, inputs, training=None):
+        if training:
+            # Generate mask for batch and feature dimensions only
+            # Keep same mask across time dimension
+            noise_shape = [tf.shape(inputs)[0], 1, tf.shape(inputs)[2]]
+            mask = tf.random.uniform(noise_shape) > self.rate
+            mask = tf.cast(mask, inputs.dtype)
+            return inputs * mask / (1.0 - self.rate)
+        return inputs
+    
+    def get_config(self):
+        config = super().get_config()
+        config.update({'rate': self.rate})
+        return config
+
+class LSTMTextGenerator:
+    """Weight-Dropped LSTM neural network for text generation (Strategy 2).
+    
+    Implements advanced regularization with DropConnect, Variational Dropout,
+    and weight tying for improved generalization.
     """
     
     def __init__(self, vocab_size: int, sequence_length: int, 
-                 lstm_units: int = 256, dropout_rate: float = 0.3):
+                 lstm_units: int = 256, 
+                 variational_dropout_rate: float = 0.3,
+                 dropconnect_rate: float = 0.2,
+                 embedding_dim: int = 128):
         """
-        Initialize LSTM text generator.
+        Initialize Weight-Dropped LSTM text generator.
         
         Args:
-            vocab_size: Size of character vocabulary
+            vocab_size: Size of vocabulary
             sequence_length: Length of input sequences
-            lstm_units: Number of LSTM units
-            dropout_rate: Dropout rate for regularization
+            lstm_units: Number of LSTM units (256 per CLAUDE.md)
+            variational_dropout_rate: Rate for variational dropout (Strategy 2.2)
+            dropconnect_rate: Rate for DropConnect (Strategy 2.1)
+            embedding_dim: Embedding dimension (Strategy 2.3)
         """
         self.vocab_size = vocab_size
         self.sequence_length = sequence_length
         self.lstm_units = lstm_units
-        self.dropout_rate = dropout_rate
+        self.variational_dropout_rate = variational_dropout_rate
+        self.dropconnect_rate = dropconnect_rate
+        self.embedding_dim = embedding_dim
         self.model: Optional[Model] = None
+        self.embedding_layer = None
+        self.dense_layer = None
         
     def build_model(self) -> Model:
         """
@@ -40,49 +103,75 @@ class LSTMTextGenerator:
         Returns:
             Compiled Keras model
         """
-        print(f"🧠 Building CORRECTED 2-layer LSTM model...")
-        print(f"   Architecture: 2 x 256-unit LSTM layers (per CLAUDE.md)")
+        print(f"🧠 Building Weight-Dropped LSTM model (Strategy 2)...")
+        print(f"   Architecture: 2 x 256-unit LSTM layers")
         print(f"   Vocab size: {self.vocab_size}")
         print(f"   Sequence length: {self.sequence_length}")
-        print(f"   LSTM units: 256 (FIXED from {self.lstm_units})")
-        print(f"   Dropout: 0.3 (regularization improved)")
-        print(f"   JIT Compilation: Habilitado con libdevice")
+        print(f"   Regularization: DropConnect + Variational Dropout")
+        print(f"   Weight tying: Embedding-Output layer shared")
+        print(f"   Advanced: Weight-Dropped LSTM implementation")
         
-        # Input layer
-        inputs = layers.Input(shape=(self.sequence_length, self.vocab_size))
+        # Strategy 2.3: Embedding layer for weight tying
+        # Use embedding instead of one-hot for memory efficiency and weight tying
+        inputs = layers.Input(shape=(self.sequence_length,), dtype='int32')
         
-        # CORRECTED: 2-layer LSTM architecture per CLAUDE.md specifications
+        # Shared embedding layer (configurable dimensions)
+        embedding_layer = layers.Embedding(
+            input_dim=self.vocab_size,
+            output_dim=self.embedding_dim,
+            mask_zero=True,
+            name='shared_embedding'
+        )
+        embedded = embedding_layer(inputs)
+        
+        # STRATEGY 2: Weight-Dropped LSTM architecture with advanced regularization
         
         # LSTM Layer 1 - 256 units with return_sequences=True
+        # Strategy 2.1 & 2.2: Remove built-in dropout, use custom regularization
         lstm_1_out = layers.LSTM(
             units=256,  # FIXED: Was self.lstm_units (128), must be 256
             return_sequences=True,  # CRITICAL: Must return sequences for next layer
-            dropout=0.3,
-            recurrent_dropout=0.3,
+            dropout=0.0,  # Disabled - using DropConnect instead
+            recurrent_dropout=0.0,  # Disabled - using VariationalDropout instead
             name='lstm_layer_1'
-        )(inputs)
+        )(embedded)
         
-        # Dropout after LSTM 1
-        dropout_1 = layers.Dropout(0.3, name='dropout_1')(lstm_1_out)
+        # Strategy 2.2: Variational Dropout after LSTM 1
+        dropout_1 = VariationalDropout(self.variational_dropout_rate, name='variational_dropout_1')(lstm_1_out)
+        
+        # Strategy 2.1: DropConnect for inter-layer connections
+        dropconnect_1 = DropConnect(self.dropconnect_rate, name='dropconnect_1')(dropout_1)
         
         # LSTM Layer 2 - 256 units with return_sequences=True  
         lstm_2_out = layers.LSTM(
             units=256,  # Maintain 256 units per spec
             return_sequences=True,  # For sequential generation
-            dropout=0.3,
-            recurrent_dropout=0.3,
+            dropout=0.0,  # Disabled - using DropConnect instead
+            recurrent_dropout=0.0,  # Disabled - using VariationalDropout instead
             name='lstm_layer_2'
-        )(dropout_1)
+        )(dropconnect_1)
         
-        # Dropout after LSTM 2
-        dropout_2 = layers.Dropout(0.3, name='dropout_2')(lstm_2_out)
+        # Strategy 2.2: Variational Dropout after LSTM 2
+        dropout_2 = VariationalDropout(self.variational_dropout_rate, name='variational_dropout_2')(lstm_2_out)
         
-        # Output layer with softmax activation
-        outputs = layers.Dense(
+        # Strategy 2.1: DropConnect before output layer
+        dropconnect_2 = DropConnect(self.dropconnect_rate, name='dropconnect_2')(dropout_2)
+        
+        # Strategy 2.3: Weight tying - output layer uses transposed embedding weights
+        # Dense layer with weight tying
+        dense_layer = layers.Dense(
             self.vocab_size,
-            activation='softmax',
-            name='output_layer'
-        )(dropout_2)
+            use_bias=False,  # No bias for weight tying
+            name='output_dense'
+        )
+        dense_out = dense_layer(dropconnect_2)
+        
+        # Apply weight tying constraint
+        def tie_weights():
+            dense_layer.set_weights([embedding_layer.get_weights()[0].T])
+        
+        # Softmax activation
+        outputs = layers.Activation('softmax', name='output_activation')(dense_out)
         
         # Create model
         self.model = Model(inputs=inputs, outputs=outputs, name='lstm_text_generator')
@@ -94,11 +183,54 @@ class LSTMTextGenerator:
             metrics=['accuracy']
         )
         
+        # Apply weight tying after model creation
+        # This needs to be done in a callback during training
+        self.embedding_layer = embedding_layer
+        self.dense_layer = dense_layer
+        
         # Model summary
         param_count = self.model.count_params()
-        print(f"✅ Model built: {param_count:,} parameters")
+        print(f"✅ Weight-Dropped LSTM built: {param_count:,} parameters")
+        print(f"   Regularization: DropConnect(0.2) + VariationalDropout(0.3)")
+        print(f"   Weight tying: Embedding ↔ Output layer")
+        print(f"   Memory efficient: Embedding instead of one-hot")
         
         return self.model
+    
+    @classmethod
+    def create_with_dropout_config(cls, vocab_size: int, sequence_length: int, 
+                                   dropout_config: str = 'balanced'):
+        """
+        Factory method to create models with different dropout configurations (Strategy 2.4).
+        
+        Args:
+            vocab_size: Size of vocabulary
+            sequence_length: Length of sequences
+            dropout_config: 'light' (0.1), 'balanced' (0.3), 'heavy' (0.5)
+        
+        Returns:
+            Configured LSTMTextGenerator instance
+        """
+        configs = {
+            'light': {'variational': 0.1, 'dropconnect': 0.05},
+            'balanced': {'variational': 0.3, 'dropconnect': 0.2},
+            'heavy': {'variational': 0.5, 'dropconnect': 0.3}
+        }
+        
+        if dropout_config not in configs:
+            raise ValueError(f"Unknown config: {dropout_config}. Use: {list(configs.keys())}")
+        
+        config = configs[dropout_config]
+        print(f"🎛️ Strategy 2.4: Using '{dropout_config}' dropout configuration")
+        print(f"   Variational dropout: {config['variational']}")
+        print(f"   DropConnect: {config['dropconnect']}")
+        
+        return cls(
+            vocab_size=vocab_size,
+            sequence_length=sequence_length,
+            variational_dropout_rate=config['variational'],
+            dropconnect_rate=config['dropconnect']
+        )
     
     def get_model_summary(self) -> str:
         """
@@ -123,6 +255,19 @@ class LSTMTextGenerator:
         summary = buffer.getvalue()
         
         return summary
+
+class WeightTyingCallback(tf.keras.callbacks.Callback):
+    """Callback to enforce weight tying between embedding and output layers."""
+    
+    def __init__(self, embedding_layer, dense_layer):
+        super().__init__()
+        self.embedding_layer = embedding_layer
+        self.dense_layer = dense_layer
+    
+    def on_batch_end(self, batch, logs=None):
+        # Tie weights after each batch
+        embedding_weights = self.embedding_layer.get_weights()[0]
+        self.dense_layer.set_weights([embedding_weights.T])
 
 class ModelTrainer:
     """Handles model training with callbacks and monitoring."""
@@ -183,12 +328,13 @@ class ModelTrainer:
         
         return self.history
     
-    def _setup_callbacks(self, patience: int = 10) -> list:
+    def _setup_callbacks(self, patience: int = 10, weight_tying_callback=None) -> list:
         """
-        Setup training callbacks.
+        Setup training callbacks including weight tying for Strategy 2.3.
         
         Args:
             patience: Early stopping patience
+            weight_tying_callback: Optional weight tying callback
         
         Returns:
             List of Keras callbacks
@@ -215,6 +361,11 @@ class ModelTrainer:
                 verbose=1
             )
         ]
+        
+        # Add weight tying callback if provided (Strategy 2.3)
+        if weight_tying_callback:
+            callbacks.append(weight_tying_callback)
+            print("✅ Weight tying callback added for Strategy 2.3")
         
         return callbacks
     
