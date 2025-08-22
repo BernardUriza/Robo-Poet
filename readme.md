@@ -6,6 +6,36 @@
 
 ## 🚀 Inicio Rápido
 
+```mermaid
+flowchart TD
+    A[📚 Preparar Texto] --> B[🧠 Entrenar Modelo]
+    B --> C[💾 Guardar Modelo]
+    C --> D[🎨 Generar Texto]
+    
+    subgraph "Fase 1: Entrenamiento"
+        B --> B1[Tokenización]
+        B1 --> B2[Secuencias LSTM]
+        B2 --> B3[GPU Training]
+        B3 --> B4[Validación]
+    end
+    
+    subgraph "Fase 2: Generación v2.1"
+        D --> D1[🚀 Rápida]
+        D --> D2[🔬 Laboratorio]
+        D --> D3[🎯 Interactiva]
+        D --> D4[⚗️ Experimentos]
+        D1 --> D5[📝 Texto Final]
+        D2 --> D5
+        D3 --> D5
+        D4 --> D5
+    end
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style D fill:#e8f5e8
+    style D5 fill:#fff3e0
+```
+
 ```bash
 # Activar entorno conda
 eval "$($HOME/miniconda3/bin/conda shell.bash hook)"       
@@ -43,10 +73,19 @@ python robo_poet.py --text "The+48+Laws+Of+Power_texto.txt" --epochs 10
 conda install -c conda-forge cudnn libcublas libcufft libcurand libcusolver libcusparse -y
 ```
 
-### 🎯 Nuevo Sistema de Dos Fases
+### 🎯 Sistema Avanzado de Dos Fases v2.1
 
 1. **🔥 FASE 1**: Entrenamiento Intensivo (1+ hora) - Crea modelos robustos
-2. **🎨 FASE 2**: Generación de Texto - Usa modelos pre-entrenados instantáneamente
+2. **🎨 FASE 2**: Estudio de Generación Avanzado - 8 modos de generación con análisis completo
+
+#### 🆕 Nuevas Características FASE 2 v2.1:
+- **🚀 Generación Rápida**: 5 presets optimizados (Narrativa, Creativo, Experimental, Académico, Artístico)
+- **🔬 Laboratorio Creativo**: Control total con generación dirigida y variaciones
+- **🎮 Sesión Interactiva**: Comandos avanzados con estadísticas en tiempo real
+- **📊 Experimentos en Lote**: 4 tipos (múltiples seeds, barrido temperature, variación longitud, matriz completa)
+- **🎨 Plantillas Temáticas**: 5 estilos literarios predefinidos con seeds optimizados
+- **📈 Análisis Avanzado**: Estadísticas detalladas del modelo y recomendaciones de uso
+- **💾 Gestión Completa**: Guardado automático con metadata y visualización de archivos
 
 ## 🎓 Arquitectura Académica v2.0 - Sistema de Dos Fases
 
