@@ -67,4 +67,4 @@ Thumbs.db
 # CUDA
 *.ptx
 *.cubin
-*.fatbin
+*.fatbinarchive/legacy/
