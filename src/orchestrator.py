@@ -27,6 +27,10 @@ if conda_prefix != '/usr/local':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
+# Suppress TensorFlow warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Suppress INFO and WARNING messages
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Disable oneDNN for consistent results
+
 # Import with fallbacks
 gpu_available = False
 tf_module = None
@@ -113,8 +117,35 @@ class RoboPoetOrchestrator:
         self.gpu_available = gpu_available
         self.tf_module = tf_module
     
+    def _safe_display(self, method_name, *args, **kwargs):
+        """Safely call display methods with fallback."""
+        if self.display and hasattr(self.display, method_name):
+            return getattr(self.display, method_name)(*args, **kwargs)
+        else:
+            # Fallback to simple print
+            if method_name == 'show_error':
+                print(f"❌ {args[0] if args else 'Error'}")
+            elif method_name == 'show_warning':
+                print(f"⚠️ {args[0] if args else 'Warning'}")
+            elif method_name == 'pause_for_user':
+                input("Presiona Enter para continuar...")
+            else:
+                print(f"ℹ️ {args[0] if args else 'Info'}")
+    
+    def _safe_file_manager(self, method_name, *args, **kwargs):
+        """Safely call file manager methods with fallback."""
+        if self.file_manager and hasattr(self.file_manager, method_name):
+            return getattr(self.file_manager, method_name)(*args, **kwargs)
+        else:
+            print(f"❌ File manager no disponible para {method_name}")
+            return None
+    
     def run_interactive_mode(self) -> int:
         """Run the main interactive academic interface."""
+        if not self.menu_system:
+            print("❌ Sistema de menús no disponible. Por favor instala las dependencias faltantes.")
+            return 1
+            
         try:
             while True:
                 self.menu_system.show_header()
@@ -122,18 +153,27 @@ class RoboPoetOrchestrator:
                 
                 if choice == '1':
                     # Phase 1: Intensive Training
+                    if not self.phase1_interface:
+                        print("❌ Interfaz de entrenamiento no disponible.")
+                        continue
+                        
                     if not self.gpu_available:
-                        self.display.show_warning(
+                        self._safe_display('show_warning',
                             "GPU no disponible. Se recomienda GPU para entrenamiento eficiente."
                         )
-                        validator = InputValidator()
-                        if not validator.get_confirmation("¿Continuar de todas formas?", False):
+                        
+                        # Simple confirmation without InputValidator if not available
+                        response = input("¿Continuar de todas formas? (y/N): ").lower().strip()
+                        if response not in ('y', 'yes', 's', 'si'):
                             continue
                     
                     self.phase1_interface.run_intensive_training()
                 
                 elif choice == '2':
                     # Phase 2: Text Generation
+                    if not self.phase2_interface:
+                        print("❌ Interfaz de generación no disponible.")
+                        continue
                     self.phase2_interface.run_generation_studio()
                 
                 elif choice == '3':

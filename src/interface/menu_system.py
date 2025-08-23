@@ -15,7 +15,13 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from config import get_config
-from gpu_detection import get_gpu_info
+# GPU info fallback for compatibility
+try:
+    from gpu_detection import get_gpu_info
+except ImportError:
+    def get_gpu_info():
+        """Fallback GPU info function."""
+        return {"gpu_available": False, "gpu_name": "N/A", "memory": "N/A"}
 
 
 class AcademicMenuSystem:
