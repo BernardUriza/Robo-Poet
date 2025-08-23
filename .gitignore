@@ -68,3 +68,4 @@ Thumbs.db
 *.ptx
 *.cubin
 *.fatbinarchive/legacy/
+\n\n# Robo-Poet specific\n*.pkl\n*.h5\n*.model\nmodels/checkpoints/*\n!models/checkpoints/.gitkeep\nlogs/*\n!logs/.gitkeep\noutput/*\n!output/.gitkeep\ndata/raw/*\n!data/raw/.gitkeep\ndata/processed/*\n!data/processed/.gitkeep\n\n# Cleanup backups\n.cleanup_backup/\n\n# IDE specific\n.vscode/\n.idea/\n*.swp\n*.swo\n\n# System files\n.DS_Store\nThumbs.db
