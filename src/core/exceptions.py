@@ -77,7 +77,7 @@ class RoboPoetError(Exception):
         
         log_data = {
             "error_type": self.__class__.__name__,
-            "message": self.message,
+            "error_message": self.message,
             "category": self.category.value,
             "severity": self.severity.value
         }
@@ -549,7 +549,7 @@ class ErrorHandler:
 
 
 # Context managers for error handling
-class ErrorContext:
+class ErrorContextManager:
     """Context manager for structured error handling."""
     
     def __init__(self, component: str, operation: str):
