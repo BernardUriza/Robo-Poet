@@ -8,32 +8,66 @@
 
 ```mermaid
 flowchart TD
-    A[📚 Preparar Texto] --> B[🧠 Entrenar Modelo]
-    B --> C[💾 Guardar Modelo]
-    C --> D[🎨 Generar Texto]
+    Start([🎓 Robo-Poet v2.1]) --> UI{🎯 Interfaz Académica}
     
-    subgraph "Fase 1: Entrenamiento"
-        B --> B1[Tokenización]
-        B1 --> B2[Secuencias LSTM]
-        B2 --> B3[GPU Training]
-        B3 --> B4[Validación]
-    end
+    %% Flow Engine 1: Training Pipeline
+    UI --> |"1. Training"| TR[⚡ Training Engine]
+    TR --> TR1[📁 Corpus Loader]
+    TR1 --> TR2[🔤 Tokenizer]
+    TR2 --> TR3[⚙️ Model Builder]
+    TR3 --> TR4[🔥 GPU Training]
+    TR4 --> TR5[💾 Model Saver]
+    TR5 --> SAVED[("🏆 Trained Model")]
     
-    subgraph "Fase 2: Generación v2.1"
-        D --> D1[🚀 Rápida]
-        D --> D2[🔬 Laboratorio]
-        D --> D3[🎯 Interactiva]
-        D --> D4[⚗️ Experimentos]
-        D1 --> D5[📝 Texto Final]
-        D2 --> D5
-        D3 --> D5
-        D4 --> D5
-    end
+    %% Flow Engine 2: Generation Pipeline
+    UI --> |"2. Generation"| GE[🎨 Generation Engine]
+    GE --> GE1{📋 Model Selector}
+    GE1 --> |"Available Models"| SAVED
+    GE1 --> GE2[🧠 Model Loader]
+    GE2 --> GE3{🎪 Generation Mode}
     
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style D fill:#e8f5e8
-    style D5 fill:#fff3e0
+    %% Generation Modes
+    GE3 --> GM1[🚀 Quick Generation]
+    GE3 --> GM2[🔬 Lab Mode]
+    GE3 --> GM3[🎮 Interactive]
+    GE3 --> GM4[📊 Batch Experiments]
+    
+    %% Output Processing
+    GM1 --> OUT[📝 Text Output]
+    GM2 --> OUT
+    GM3 --> OUT
+    GM4 --> OUT
+    
+    %% Flow Engine 3: Monitoring & Control
+    UI --> |"3. Monitoring"| ME[📊 Monitoring Engine]
+    ME --> ME1[👁️ Progress Tracker]
+    ME --> ME2[📈 TensorBoard]
+    ME --> ME3[🔍 System Health]
+    ME --> ME4[🎛️ GPU Status]
+    
+    %% Flow Engine 4: Configuration Management
+    UI --> |"4. Config"| CE[⚙️ Config Engine]
+    CE --> CE1[🖥️ Hardware Detection]
+    CE --> CE2[📋 Hyperparameters]
+    CE --> CE3[🔧 Environment Setup]
+    CE --> CE4[📊 Performance Metrics]
+    
+    %% Data Flow
+    TR4 -.-> |"Training Logs"| ME2
+    TR4 -.-> |"Progress"| ME1
+    GE2 -.-> |"Performance"| CE4
+    CE1 -.-> |"GPU Config"| TR4
+    
+    %% Styling
+    classDef engine fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef process fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef storage fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef output fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    
+    class TR,GE,ME,CE engine
+    class TR1,TR2,TR3,GE1,GE2,GM1,GM2,GM3,GM4,ME1,ME2,ME3,ME4,CE1,CE2,CE3,CE4 process
+    class SAVED storage
+    class OUT output
 ```
 
 ```bash
@@ -87,92 +121,155 @@ conda install -c conda-forge cudnn libcublas libcufft libcurand libcusolver libc
 - **📈 Análisis Avanzado**: Estadísticas detalladas del modelo y recomendaciones de uso
 - **💾 Gestión Completa**: Guardado automático con metadata y visualización de archivos
 
-## 🎓 Arquitectura Académica v2.1 - Sistema de Dos Fases Mejorado
+## 🏗️ Arquitectura Enterprise v2.1 - Flow Engines & DDD
+
+### 🎯 Conceptos de Flow Engines
+
+Los **Flow Engines** son componentes orquestadores que encapsulan flujos de trabajo complejos siguiendo principios de Domain-Driven Design (DDD). Cada engine maneja un contexto de negocio específico:
+
+#### ⚡ Training Engine
+- **Propósito**: Orquesta el flujo completo de entrenamiento
+- **Responsabilidades**: Gestión de corpus, tokenización, construcción de modelo, entrenamiento GPU
+- **Patrón**: Command + Factory + Observer
+- **Entidades**: TextCorpus, GenerationModel, TrainingSession
+
+#### 🎨 Generation Engine  
+- **Propósito**: Orquesta la generación de texto con múltiples estrategias
+- **Responsabilidades**: Carga de modelos, sampling, post-procesamiento, calidad
+- **Patrón**: Strategy + Template Method + Chain of Responsibility
+- **Entidades**: GenerationModel, GenerationParams, OutputQuality
+
+#### 📊 Monitoring Engine
+- **Propósito**: Observabilidad y métricas del sistema
+- **Responsabilidades**: Recolección de métricas, logging, alertas, dashboards
+- **Patrón**: Observer + Publish-Subscribe + Decorator
+- **Value Objects**: Metrics, HealthCheck, Performance
+
+#### ⚙️ Configuration Engine
+- **Propósito**: Gestión centralizada de configuración y hardware
+- **Responsabilidades**: Detección de hardware, validación de config, optimización automática
+- **Patrón**: Singleton + Builder + Validation
+- **Value Objects**: SystemConfig, GPUConfig, ModelConfig
+
+### 🧭 Principios Arquitectónicos
+
+1. **Separation of Concerns**: Cada engine tiene responsabilidades bien definidas
+2. **Dependency Inversion**: Engines dependen de abstracciones, no implementaciones
+3. **Single Responsibility**: Cada componente tiene una razón para cambiar
+4. **Open/Closed**: Extensible sin modificar código existente
+5. **Domain-Driven**: Modelado basado en el dominio del problema
 
 ```mermaid
-flowchart TD
-    A[🎓 Robo-Poet Academic Interface v2.1] --> B[🎯 Menú Principal]
+flowchart TB
+    %% Domain-Driven Design Architecture with Flow Engines
     
-    B --> C[🔥 FASE 1: Entrenamiento Intensivo]
-    B --> D[🎨 FASE 2: Generación de Texto]
-    B --> E[📊 Ver Modelos Disponibles]
-    B --> F[📈 Monitorear Progreso]
-    B --> G[⚙️ Configuración del Sistema]
-    
-    %% FASE 1 - Entrenamiento Intensivo
-    C --> C1[📁 Selección de Corpus]
-    C1 --> C2[🎯 Configuración de Épocas]
-    C2 --> C3[⚠️ Confirmación de Entrenamiento]
-    C3 --> C4[🚀 Setup de GPU]
-    C4 --> C5[📚 Preparación de Datos]
-    C5 --> C6[🧠 Construcción de Modelo LSTM]
-    C6 --> C7[⚡ Entrenamiento Intensivo 1+ hora]
-    C7 --> C8[💾 Guardado Automático con Timestamp]
-    C8 --> C9[📋 Metadata JSON Completa]
-    
-    %% FASE 2 - Generación de Texto
-    D --> D1[📋 Lista de Modelos Disponibles]
-    D1 --> D2[🎯 Selección de Modelo]
-    D2 --> D3[📁 Carga de Modelo + Metadata]
-    D3 --> D4[🎨 Menú de Generación]
-    
-    D4 --> D4A[📝 Generación Simple]
-    D4 --> D4B[🎮 Modo Interactivo]
-    D4 --> D4C[📊 Generación en Lote]
-    
-    D4A --> D5[🌡️ Control Temperature/Length]
-    D4B --> D6[🔄 Generación Continua]
-    D4C --> D7[📈 Múltiples Seeds]
-    
-    %% Sistema de Monitoreo
-    F --> F1[🔍 Checkpoints Activos]
-    F1 --> F2[📅 Estado de Entrenamientos]
-    F2 --> F3[📊 TensorBoard Logs]
-    
-    %% Configuración del Sistema
-    G --> G1[💻 Estado de GPU]
-    G1 --> G2[🎛️ Hiperparámetros]
-    G2 --> G3[📋 Información del Hardware]
-    
-    %% Arquitectura del Sistema
-    subgraph "🏗️ Arquitectura Modular"
-        H[src/config.py<br/>Configuración GPU/Modelo]
-        I[src/data_processor.py<br/>Procesamiento y Generación]
-        J[src/model.py<br/>LSTM + Training + Management]
-        K[robo_poet.py<br/>Interfaz Académica Unificada]
+    subgraph "🏛️ Application Layer"
+        CLI[🎯 CLI Interface]
+        API[🌐 REST API]
+        GUI[🖥️ Web Interface]
     end
     
-    %% Flujo de Datos
-    C9 --> L[models/robo_poet_model_TIMESTAMP.h5]
-    C9 --> M[models/robo_poet_model_TIMESTAMP_metadata.json]
-    L --> D1
-    M --> D1
-    
-    %% Características Técnicas
-    subgraph "🔧 Stack Tecnológico Verificado"
-        N[Kali Linux WSL2]
-        O[NVIDIA RTX 2000 Ada - 8GB VRAM]
-        P[TensorFlow 2.20 + CUDA 12.2]
-        Q[Python 3.10 + Conda Environment]
+    subgraph "🎭 Service Layer (Flow Engines)"
+        TE[⚡ Training Engine]
+        GE[🎨 Generation Engine]
+        ME[📊 Monitoring Engine]
+        CE[⚙️ Configuration Engine]
     end
     
-    %% Optimizaciones
-    subgraph "⚡ Optimizaciones RTX 2000 Ada"
-        R[Mixed Precision FP16]
-        S[Memory Growth Dynamic]
-        T[Checkpoints Automáticos]
-        U[Early Stopping Inteligente]
+    subgraph "🏗️ Domain Layer"
+        subgraph "📚 Text Processing Domain"
+            TC[TextCorpus]
+            TK[Tokenizer]
+            VP[VocabularyProcessor]
+        end
+        
+        subgraph "🧠 Model Domain"
+            GM[GenerationModel]
+            TA[TrainingAlgorithm]
+            MP[ModelPersistence]
+        end
+        
+        subgraph "🎯 Generation Domain"
+            GS[GenerationStrategy]
+            SP[SamplingPolicy]
+            QA[QualityAssurance]
+        end
     end
     
-    style A fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    style C fill:#ffebee,stroke:#c62828,stroke-width:2px
-    style D fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    style F fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    style G fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    subgraph "💾 Infrastructure Layer"
+        subgraph "🗄️ Persistence"
+            FR[FileRepository]
+            MR[ModelRepository]
+            CR[ConfigRepository]
+        end
+        
+        subgraph "🖥️ Hardware Abstraction"
+            GPU[GPU Manager]
+            MEM[Memory Manager]
+            MON[Monitor Service]
+        end
+        
+        subgraph "🔧 External Services"
+            TB[TensorBoard]
+            LOG[Logging Service]
+            CACHE[Cache Service]
+        end
+    end
     
-    style C7 fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px
-    style D6 fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
-    style K fill:#e1f5fe,stroke:#0277bd,stroke-width:3px
+    %% Flow Engine Connections
+    CLI --> TE
+    CLI --> GE
+    CLI --> ME
+    CLI --> CE
+    
+    %% Training Engine Flow
+    TE --> TC
+    TE --> TK
+    TE --> GM
+    TE --> TA
+    TE --> MP
+    TE --> GPU
+    TE --> TB
+    
+    %% Generation Engine Flow
+    GE --> GM
+    GE --> GS
+    GE --> SP
+    GE --> QA
+    GE --> GPU
+    
+    %% Monitoring Engine Flow
+    ME --> MON
+    ME --> LOG
+    ME --> TB
+    ME --> CACHE
+    
+    %% Configuration Engine Flow
+    CE --> CR
+    CE --> GPU
+    CE --> MEM
+    
+    %% Repository Connections
+    TC --> FR
+    GM --> MR
+    VP --> CACHE
+    
+    %% Cross-Engine Communication
+    TE -.-> |"Progress Updates"| ME
+    GE -.-> |"Performance Metrics"| ME
+    CE -.-> |"System Config"| TE
+    CE -.-> |"System Config"| GE
+    
+    %% Styling for Flow Engines
+    classDef flowEngine fill:#e1f5fe,stroke:#0277bd,stroke-width:3px,color:#000
+    classDef domain fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef infra fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef app fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    
+    class TE,GE,ME,CE flowEngine
+    class TC,TK,VP,GM,TA,MP,GS,SP,QA domain
+    class FR,MR,CR,GPU,MEM,MON,TB,LOG,CACHE infra
+    class CLI,API,GUI app
 ```
 
 ## 🎓 Marco Académico y Metodológico v2.1
@@ -954,12 +1051,115 @@ chmod +x scripts/backup_model.sh
 - ✅ **Plantillas temáticas y presets**
 - ✅ **Experimentos en lote automatizados**
 
-### 🚀 Próximas Mejoras
+## 🚀 Fase 5: Deployment & Monitoring - Objetivos Establecidos
 
-- 📊 Integración de métricas de evaluación automática
-- 🎯 Fine-tuning de modelos pre-entrenados
-- 📱 Interfaz web académica opcional
-- 🔄 Export a diferentes formatos (ONNX, TensorFlow Lite)
+### 🎯 Objetivos Estratégicos
+
+#### 14. Containerización Profesional
+- **14.1** Dockerfile multi-stage optimizado para GPU con CUDA runtime
+- **14.2** Docker Compose para desarrollo con servicios (Redis, PostgreSQL, TensorBoard)
+- **14.3** Imágenes optimizadas < 2GB con capas cacheables
+- **14.4** Health checks avanzados para todos los servicios
+- **14.5** Security scanning automático con Trivy y Snyk
+- **Objetivo**: Deployments reproducibles y seguros
+
+#### 15. CI/CD Pipeline Enterprise
+- **15.1** GitHub Actions workflow con matrix testing (Python 3.10, 3.11, 3.12)
+- **15.2** Testing automatizado en GPUs (self-hosted runners con NVIDIA)
+- **15.3** Quality gates: Black, isort, mypy, pytest con coverage >95%
+- **15.4** Security scanning: Bandit, Safety, OWASP dependency check
+- **15.5** Automated deployment a staging y producción
+- **Objetivo**: Zero-downtime deployments con calidad garantizada
+
+#### 16. Observabilidad y Monitoring Completo
+- **16.1** Structured logging con Loguru y formato JSON
+- **16.2** Métricas custom con Prometheus (training speed, GPU utilization, model accuracy)
+- **16.3** Distributed tracing con OpenTelemetry para debugging
+- **16.4** Error tracking y alerting con Sentry
+- **16.5** Performance monitoring con Grafana dashboards
+- **Objetivo**: Visibilidad completa del sistema en producción
+
+### 📊 KPIs de Fase 5
+
+| Métrica | Objetivo | Medición |
+|---------|----------|----------|
+| **Build Time** | < 5 minutos | GitHub Actions |
+| **Test Coverage** | > 95% | pytest-cov |
+| **Security Score** | A grade | Snyk |
+| **Container Size** | < 2GB | Docker images |
+| **Deploy Time** | < 2 minutos | Pipeline metrics |
+| **MTTR** | < 15 minutos | Incident response |
+| **Uptime** | 99.9% | Monitoring alerts |
+
+### 🛠️ Stack Tecnológico Fase 5
+
+```mermaid
+flowchart LR
+    subgraph "📦 Containerization"
+        Docker[Docker 24+]
+        Compose[Docker Compose]
+        Registry[Container Registry]
+    end
+    
+    subgraph "🔄 CI/CD"
+        GHA[GitHub Actions]
+        Runners[GPU Runners]
+        Quality[Quality Gates]
+    end
+    
+    subgraph "📊 Monitoring"
+        Prometheus[Prometheus]
+        Grafana[Grafana]
+        Loguru[Loguru]
+        Sentry[Sentry]
+        OTEL[OpenTelemetry]
+    end
+    
+    subgraph "☁️ Cloud Native"
+        K8s[Kubernetes]
+        Helm[Helm Charts]
+        Ingress[NGINX Ingress]
+    end
+    
+    Docker --> GHA
+    GHA --> Quality
+    Quality --> Registry
+    Registry --> K8s
+    K8s --> Prometheus
+    Prometheus --> Grafana
+```
+
+### 🎯 Roadmap de Implementación
+
+#### **Semana 1**: Containerización Base
+- Dockerfile optimizado con CUDA runtime
+- Docker Compose para desarrollo local
+- Health checks y multi-stage builds
+
+#### **Semana 2**: CI/CD Pipeline
+- GitHub Actions con matrix testing
+- Quality gates y security scanning
+- Automated testing en GPUs
+
+#### **Semana 3**: Observabilidad Core
+- Structured logging y métricas
+- Prometheus setup y dashboards básicos
+- Error tracking con Sentry
+
+#### **Semana 4**: Monitoring Avanzado
+- Distributed tracing
+- Alerting y runbooks
+- Performance optimization
+
+#### **Semana 5**: Production Deployment
+- Kubernetes manifests
+- Blue/green deployments
+- Load testing y tuning
+
+#### **Semana 6**: Optimización y Documentación
+- Performance tuning
+- Runbooks operacionales
+- Training para el equipo
 
 ## 🔬 Documentación Técnica: Solución WSL2 GPU Detection
 
