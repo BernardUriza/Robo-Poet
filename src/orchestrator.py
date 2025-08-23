@@ -16,23 +16,83 @@ import argparse
 from pathlib import Path
 from typing import Optional
 
-# Configure GPU environment FIRST, before any imports
-from gpu_detection import configure_gpu_environment, detect_gpu_for_wsl2
+# Import core modules safely
+import os
 
-# Configure environment
-configure_gpu_environment()
+# Configure environment for potential GPU use
+conda_prefix = os.getenv('CONDA_PREFIX', '/usr/local')
+if conda_prefix != '/usr/local':
+    os.environ['CUDA_HOME'] = conda_prefix
+    os.environ['LD_LIBRARY_PATH'] = f'{conda_prefix}/lib:{conda_prefix}/lib64:{os.environ.get("LD_LIBRARY_PATH", "")}'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
-# Detect GPU with WSL2 support
-gpu_available, tf_module = detect_gpu_for_wsl2()
+# Import with fallbacks
+gpu_available = False
+tf_module = None
 
-# Import framework components
-from config import get_config
-from interface.menu_system import AcademicMenuSystem
-from interface.phase1_training import Phase1TrainingInterface
-from interface.phase2_generation import Phase2GenerationInterface
-from utils.file_manager import FileManager
-from utils.display_utils import DisplayUtils
-from utils.input_validator import InputValidator
+try:
+    from core.unified_config import get_config
+except ImportError:
+    # Fallback to basic config
+    def get_config():
+        from types import SimpleNamespace
+        return SimpleNamespace(
+            gpu=SimpleNamespace(mixed_precision=True, memory_growth=True),
+            model=SimpleNamespace(batch_size=32, epochs=10),
+            system=SimpleNamespace(debug=True)
+        )
+
+# GPU detection with graceful fallback
+try:
+    import tensorflow as tf
+    # Try direct GPU test for WSL2 compatibility  
+    with tf.device('/GPU:0'):
+        test_tensor = tf.constant([1.0, 2.0, 3.0])
+        result = tf.reduce_sum(test_tensor)
+    gpu_available = True
+    tf_module = tf
+    print("🎯 GPU funcionando correctamente")
+except Exception as e:
+    print(f"⚠️ GPU no disponible, continuando sin GPU: {e}")
+    gpu_available = False
+
+# Import framework components with fallbacks
+try:
+    from interface.menu_system import AcademicMenuSystem
+except ImportError as e:
+    print(f"⚠️ Menu system not available: {e}")
+    AcademicMenuSystem = None
+
+try:
+    from interface.phase1_training import Phase1TrainingInterface
+except ImportError as e:
+    print(f"⚠️ Phase1 interface not available: {e}")
+    Phase1TrainingInterface = None
+
+try:
+    from interface.phase2_generation import Phase2GenerationInterface
+except ImportError as e:
+    print(f"⚠️ Phase2 interface not available: {e}")
+    Phase2GenerationInterface = None
+
+try:
+    from utils.file_manager import FileManager
+except ImportError as e:
+    print(f"⚠️ File manager not available: {e}")
+    FileManager = None
+
+try:
+    from utils.display_utils import DisplayUtils
+except ImportError as e:
+    print(f"⚠️ Display utils not available: {e}")
+    DisplayUtils = None
+
+try:
+    from utils.input_validator import InputValidator
+except ImportError as e:
+    print(f"⚠️ Input validator not available: {e}")
+    InputValidator = None
 
 
 class RoboPoetOrchestrator:
@@ -41,11 +101,13 @@ class RoboPoetOrchestrator:
     def __init__(self):
         """Initialize orchestrator with all components."""
         self.config = get_config()
-        self.menu_system = AcademicMenuSystem()
-        self.phase1_interface = Phase1TrainingInterface(self.config)
-        self.phase2_interface = Phase2GenerationInterface(self.config)
-        self.file_manager = FileManager()
-        self.display = DisplayUtils()
+        
+        # Initialize components with fallbacks
+        self.menu_system = AcademicMenuSystem() if AcademicMenuSystem else None
+        self.phase1_interface = Phase1TrainingInterface(self.config) if Phase1TrainingInterface else None
+        self.phase2_interface = Phase2GenerationInterface(self.config) if Phase2GenerationInterface else None
+        self.file_manager = FileManager() if FileManager else None
+        self.display = DisplayUtils() if DisplayUtils else None
         
         # GPU availability
         self.gpu_available = gpu_available
