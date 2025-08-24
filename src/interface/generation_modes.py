@@ -32,6 +32,9 @@ class GenerationModes:
         self.display = DisplayUtils()
         self.file_manager = FileManager()
         
+        # Model name for display
+        self.model_name = "unknown"
+        
         # Session statistics
         self.session_stats = {
             'generations_count': 0,
@@ -40,6 +43,10 @@ class GenerationModes:
             'start_time': datetime.now()
         }
         self.last_generation = None
+    
+    def set_model_name(self, model_name: str):
+        """Set the model name for generation display."""
+        self.model_name = model_name
     
     def quick_generation(self, generator) -> None:
         """Quick generation with optimized presets."""
@@ -286,11 +293,12 @@ class GenerationModes:
             'temperature': temperature,
             'length': length,
             'generation_time': generation_time,
-            'timestamp': datetime.now()
+            'timestamp': datetime.now(),
+            'model_name': self.model_name
         }
         
-        # Display result
-        self.display.format_generation_result(result, seed, temperature, length, generation_time)
+        # Display result with model name
+        self.display.format_generation_result(result, seed, temperature, length, generation_time, self.model_name)
         
         # Offer save
         if self.validator.get_confirmation("💾 ¿Guardar esta generación?", False):

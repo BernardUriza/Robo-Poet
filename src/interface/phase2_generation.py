@@ -143,6 +143,9 @@ class Phase2GenerationInterface:
         # Create text generator
         generator = TextGenerator(model, char_to_idx, idx_to_char)
         
+        # Set model name in generation modes for proper display
+        self.generation_modes.set_model_name(model_name)
+        
         while True:
             self.display.clear_screen()
             self._show_generation_menu(model_name)
