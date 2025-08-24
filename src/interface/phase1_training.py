@@ -34,6 +34,48 @@ class Phase1TrainingInterface:
         self.validator = InputValidator()
         self.display = DisplayUtils()
     
+    def _get_model_name(self) -> Optional[str]:
+        """Get and validate model name from user (mandatory)."""
+        print("\n🎯 NOMBRE DEL MODELO (OBLIGATORIO)")
+        print("=" * 50)
+        print("📌 Cada modelo debe tener un nombre único para identificarlo")
+        print("💡 Ejemplos: 'shakespeare_v1', 'poeta_español', 'novela_fantasia'")
+        print("⚠️  El nombre no puede dejarse vacío")
+        
+        while True:
+            model_name = input("\n✏️  Ingresa el nombre del modelo: ").strip()
+            
+            if not model_name:
+                self.display.show_error("❌ El nombre del modelo es OBLIGATORIO")
+                print("   Por favor, ingresa un nombre válido para continuar")
+                continue
+            
+            # Validar caracteres permitidos (alfanuméricos, guiones y underscores)
+            import re
+            if not re.match(r'^[a-zA-Z0-9_-]+$', model_name):
+                self.display.show_error(
+                    "❌ El nombre solo puede contener letras, números, guiones y underscores"
+                )
+                continue
+            
+            # Verificar si ya existe un modelo con ese nombre
+            models_dir = Path('models')
+            if models_dir.exists():
+                existing_model = models_dir / f"{model_name}.keras"
+                if existing_model.exists():
+                    self.display.show_warning(
+                        f"⚠️  Ya existe un modelo llamado '{model_name}'"
+                    )
+                    overwrite = self.validator.get_confirmation(
+                        "¿Deseas sobrescribir el modelo existente?",
+                        default_yes=False
+                    )
+                    if not overwrite:
+                        continue
+            
+            print(f"✅ Nombre del modelo: '{model_name}'")
+            return model_name
+    
     def run_intensive_training(self) -> bool:
         """Execute Phase 1 intensive training workflow."""
         self.display.clear_screen()
@@ -44,22 +86,27 @@ class Phase1TrainingInterface:
         print("⏰ Duración estimada: 1-3 horas (dependiendo de épocas)")
         print("=" * 80)
         
-        # Step 1: Select training text
+        # Step 1: Get model name FIRST (mandatory)
+        model_name = self._get_model_name()
+        if not model_name:
+            return False
+        
+        # Step 2: Select training text
         text_file = self._get_training_text()
         if not text_file:
             return False
         
-        # Step 2: Configure epochs
+        # Step 3: Configure epochs
         epochs = self._get_epochs_configuration()
         if epochs == 0:
             return False
         
-        # Step 3: Show training preview and confirmation
-        if not self._confirm_training(text_file, epochs):
+        # Step 4: Show training preview and confirmation
+        if not self._confirm_training(text_file, epochs, model_name):
             return False
         
-        # Step 4: Execute training
-        return self._execute_training(text_file, epochs)
+        # Step 5: Execute training
+        return self._execute_training(text_file, epochs, model_name)
     
     def _get_training_text(self) -> Optional[str]:
         """Get and validate training text file."""
@@ -141,7 +188,7 @@ class Phase1TrainingInterface:
             if epochs > 100:
                 return 0  # Cancel training
     
-    def _confirm_training(self, text_file: str, epochs: int) -> bool:
+    def _confirm_training(self, text_file: str, epochs: int, model_name: str) -> bool:
         """Show training configuration and get final confirmation."""
         print("\n⚠️ CONFIRMACIÓN FINAL DE ENTRENAMIENTO")
         print("=" * 50)
@@ -151,6 +198,7 @@ class Phase1TrainingInterface:
         estimated_time_min = epochs * 3
         estimated_time_max = epochs * 8
         
+        print(f"🏷️  Modelo: {model_name}")
         print(f"📚 Archivo: {text_file}")
         print(f"📊 Tamaño: {file_size:.1f} KB")
         print(f"🎯 Épocas: {epochs}")
@@ -168,10 +216,11 @@ class Phase1TrainingInterface:
             default_yes=True
         )
     
-    def _execute_training(self, text_file: str, epochs: int) -> bool:
+    def _execute_training(self, text_file: str, epochs: int, model_name: str) -> bool:
         """Execute the actual training process."""
         self.display.show_training_header(text_file, epochs)
         
+        print(f"🏷️  Modelo: {model_name}")
         print("🔧 Configurando entorno GPU...")
         print("📚 Preparando datos...")
         print("🧠 Construyendo modelo LSTM...")
@@ -179,12 +228,13 @@ class Phase1TrainingInterface:
         print()
         
         try:
-            # Prepare training command
+            # Prepare training command with model name
             cmd = [
                 sys.executable, 
                 'robo_poet.py', 
                 '--text', text_file, 
-                '--epochs', str(epochs)
+                '--epochs', str(epochs),
+                '--model', model_name
             ]
             
             # Configure environment for subprocess
@@ -218,7 +268,8 @@ class Phase1TrainingInterface:
                 self.display.show_success(
                     f"Entrenamiento completado exitosamente en {training_duration/60:.1f} minutos"
                 )
-                print("🎉 Modelo guardado automáticamente en directorio models/")
+                print(f"🎉 Modelo '{model_name}' guardado en directorio models/")
+                print(f"📁 Ubicación: models/{model_name}.keras")
                 print("🎨 Ahora puedes usar FASE 2: Generación de Texto")
                 self.display.pause_for_user()
                 return True
