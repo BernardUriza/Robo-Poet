@@ -210,13 +210,13 @@ class RoboPoetOrchestrator:
             self.display.show_error(f"Error crítico en orchestrator: {e}")
             return 1
     
-    def run_direct_training(self, text_file: str, epochs: int) -> int:
-        """Run direct training mode (CLI)."""
+    def run_direct_training(self, text_file: str, epochs: int, model_name: str) -> int:
+        """Run direct training mode (CLI) with mandatory model name."""
         try:
             if not self.gpu_available:
                 print("⚠️ GPU no disponible - entrenamiento será lento en CPU")
             
-            print(f"🚀 Modo directo: Entrenando con {text_file} por {epochs} épocas")
+            print(f"🚀 Modo directo: Entrenando modelo '{model_name}' con {text_file} por {epochs} épocas")
             
             # Validate parameters
             if not Path(text_file).exists():
@@ -277,16 +277,16 @@ class RoboPoetOrchestrator:
                 validation_split=self.config.data.validation_split
             )
             
-            # Save model and metadata
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            model_filename = f"robo_poet_model_{timestamp}.keras"
+            # Save model and metadata with user-provided name
+            model_filename = f"{model_name}.keras"
             model_path = self.file_manager.models_dir / model_filename
             
             ModelManager.save_model(model, str(model_path))
             
             # Save metadata
             metadata = {
-                'model_name': model_filename,
+                'model_name': model_name,
+                'model_file': model_filename,
                 'training_file': text_file,
                 'epochs': epochs,
                 'final_epoch': len(history.history['loss']),
@@ -306,14 +306,15 @@ class RoboPoetOrchestrator:
                 'gpu_used': self.gpu_available
             }
             
-            metadata_path = self.file_manager.models_dir / f"{Path(model_filename).stem}_metadata.json"
+            metadata_path = self.file_manager.models_dir / f"{model_name}_metadata.json"
             with open(metadata_path, 'w') as f:
                 json.dump(metadata, f, indent=2)
             
             print(f"✅ Entrenamiento completado exitosamente")
-            print(f"💾 Modelo guardado: {model_path}")
-            print(f"📋 Metadata guardada: {metadata_path}")
-            print(f"🎨 Ahora puedes usar el modo generación")
+            print(f"🏷️  Modelo '{model_name}' guardado")
+            print(f"💾 Archivo: {model_path}")
+            print(f"📋 Metadata: {metadata_path}")
+            print(f"🎨 Ahora puedes usar: python robo_poet.py --generate {model_filename}")
             
             return 0
             
@@ -464,16 +465,17 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos de uso:
-  python robo_poet.py                                    # Interfaz académica interactiva
-  python robo_poet.py --text archivo.txt --epochs 20    # Entrenamiento directo
-  python robo_poet.py --generate modelo.keras           # Generación directa
-  python robo_poet.py --generate modelo.keras --seed "The power" --temp 0.8
+  python robo_poet.py                                                  # Interfaz académica interactiva
+  python robo_poet.py --text archivo.txt --epochs 20 --model mi_modelo # Entrenamiento directo
+  python robo_poet.py --generate mi_modelo.keras                       # Generación directa
+  python robo_poet.py --generate mi_modelo.keras --seed "The power" --temp 0.8
         """
     )
     
     # Training arguments
     parser.add_argument('--text', help='Archivo de texto para entrenamiento')
     parser.add_argument('--epochs', type=int, default=20, help='Número de épocas (default: 20)')
+    parser.add_argument('--model', help='Nombre del modelo a entrenar (obligatorio con --text)')
     
     # Generation arguments
     parser.add_argument('--generate', help='Modelo para generación de texto')
@@ -490,7 +492,11 @@ Ejemplos de uso:
     try:
         # Direct training mode
         if args.text:
-            return orchestrator.run_direct_training(args.text, args.epochs)
+            if not args.model:
+                print("❌ ERROR: El nombre del modelo es obligatorio para entrenar")
+                print("   Uso: python robo_poet.py --text archivo.txt --epochs 20 --model nombre_modelo")
+                return 1
+            return orchestrator.run_direct_training(args.text, args.epochs, args.model)
         
         # Direct generation mode  
         elif args.generate:
