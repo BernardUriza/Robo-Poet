@@ -122,51 +122,137 @@ class TextProcessor:
         # Initialize logger
         self.logger = logging.getLogger(__name__)
     
-    def load_text(self, filepath: Union[str, Path], max_length: int = 50_000) -> str:
+    def load_text(self, corpus_path: Union[str, Path] = "corpus", max_length: int = 200_000, prefer_unified: bool = True) -> str:
         """
-        Load and preprocess text from file with comprehensive error handling.
+        Load text from unified corpus or fallback to multi-file corpus.
         
-        Loads text content from the specified file, applies basic preprocessing,
-        and truncates to the specified maximum length. Supports UTF-8 encoding
-        and provides detailed error reporting for common file access issues.
+        Automatically prefers the preprocessed unified corpus when available, otherwise
+        falls back to combining individual .txt files from the corpus directory.
+        The unified corpus provides better training convergence due to proper
+        document markers and consistent preprocessing.
         
         Args:
-            filepath: Path to text file (string or Path object)
-            max_length: Maximum characters to load (default 50,000 for memory efficiency)
+            corpus_path: Path to corpus directory containing .txt files (default: "corpus")
+            max_length: Maximum characters to load total (default 200,000 for multi-corpus)
+            prefer_unified: Use unified corpus if available (default: True)
             
         Returns:
-            Preprocessed text string, cleaned and normalized
+            Combined preprocessed text string from unified or multi-file corpus
             
         Raises:
-            FileNotFoundError: If the specified file doesn't exist
-            UnicodeDecodeError: If file has encoding issues (non-UTF-8)
-            PermissionError: If insufficient permissions to read file
+            FileNotFoundError: If corpus directory doesn't exist or contains no .txt files
+            UnicodeDecodeError: If any file has encoding issues (non-UTF-8)
+            PermissionError: If insufficient permissions to read files
             OSError: For other file system related errors
             ValueError: If max_length is not positive
             
         Example:
             >>> processor = TextProcessor()
-            >>> text = processor.load_text('corpus.txt', max_length=100000)
-            >>> print(f"Loaded {len(text)} characters")
+            >>> text = processor.load_text("corpus", max_length=500000)  # Load all corpus files
+            >>> print(f"Combined corpus loaded: {len(text)} characters")
         """
         if max_length <= 0:
             raise ValueError(f"max_length must be positive, got {max_length}")
+        
+        # Check for preprocessed unified corpus first
+        unified_corpus_path = Path("data/processed/unified_corpus.txt")
+        
+        if prefer_unified and unified_corpus_path.exists():
+            print(f"🎯 USING UNIFIED PREPROCESSED CORPUS")
+            print(f"   File: {unified_corpus_path}")
             
-        filepath = Path(filepath)  # Convert to Path for consistency
+            try:
+                with open(unified_corpus_path, 'r', encoding='utf-8') as f:
+                    unified_text = f.read()[:max_length]
+                
+                print(f"   ✅ Unified corpus loaded: {len(unified_text):,} characters")
+                print(f"   🎭 Contains document markers for style control")
+                print(f"   📊 Preprocessed vocabulary and normalization")
+                
+                return unified_text
+                
+            except Exception as e:
+                print(f"   ⚠️ Error loading unified corpus: {e}")
+                print(f"   📝 Falling back to multi-file corpus...")
+        
+        # Fallback to original multi-file approach
+        corpus_path = Path(corpus_path)  # Convert to Path for consistency
+        
+        if not corpus_path.exists():
+            raise FileNotFoundError(f"Corpus directory not found: {corpus_path}")
+            
+        if not corpus_path.is_dir():
+            raise FileNotFoundError(f"Corpus path is not a directory: {corpus_path}")
+        
+        # Find all .txt files in corpus directory
+        txt_files = list(corpus_path.glob("*.txt"))
+        
+        if not txt_files:
+            raise FileNotFoundError(f"No .txt files found in corpus directory: {corpus_path}")
+        
+        print(f"📚 MULTI-CORPUS LOADING SYSTEM (FALLBACK)")
+        print(f"   Directory: {corpus_path}")
+        print(f"   Found {len(txt_files)} text files:")
+        print(f"   💡 Tip: Ejecuta preprocesamiento para mejor convergencia")
+        
+        combined_text = ""
+        total_chars_loaded = 0
+        files_loaded = 0
+        
+        # Sort files for consistent loading order
+        txt_files.sort()
+        
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                text = f.read()[:max_length]
+            for txt_file in txt_files:
+                # Check if we've reached the character limit
+                if total_chars_loaded >= max_length:
+                    print(f"   ⚠️ Reached max_length limit ({max_length:,} chars), stopping...")
+                    break
+                
+                print(f"   📖 Loading: {txt_file.name}...", end=" ")
+                
+                try:
+                    with open(txt_file, 'r', encoding='utf-8') as f:
+                        # Calculate remaining space
+                        remaining_space = max_length - total_chars_loaded
+                        file_content = f.read()[:remaining_space]
+                    
+                    # Clean the individual file content
+                    cleaned_content = self._clean_text(file_content)
+                    
+                    # Add separator between different works
+                    if combined_text and cleaned_content:
+                        combined_text += "\n\n" + cleaned_content
+                    else:
+                        combined_text += cleaned_content
+                    
+                    file_chars = len(cleaned_content)
+                    total_chars_loaded += file_chars
+                    files_loaded += 1
+                    
+                    print(f"✅ {file_chars:,} chars")
+                    
+                except UnicodeDecodeError as e:
+                    print(f"❌ Encoding error: {e}")
+                    continue
+                except Exception as e:
+                    print(f"❌ Error: {e}")
+                    continue
             
-            # Basic text cleaning
-            text = self._clean_text(text)
+            if not combined_text:
+                raise FileNotFoundError("No valid text content could be loaded from corpus files")
             
-            print(f"✅ Text loaded: {len(text):,} characters")
-            return text
+            print(f"\n📊 MULTI-CORPUS SUMMARY:")
+            print(f"   ✅ Files successfully loaded: {files_loaded}/{len(txt_files)}")
+            print(f"   📝 Total characters: {len(combined_text):,}")
+            print(f"   🎯 Combined corpus ready for training")
             
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Text file not found: {filepath}")
-        except UnicodeDecodeError as e:
-            raise UnicodeDecodeError(f"Encoding error in {filepath}: {e}")
+            return combined_text
+            
+        except Exception as e:
+            if "No valid text content" in str(e):
+                raise
+            raise FileNotFoundError(f"Error loading corpus files: {e}")
     
     def _clean_text(self, text: str) -> str:
         """
@@ -331,26 +417,27 @@ class TextProcessor:
         
         return X, y
     
-    def prepare_data(self, filepath: str, max_length: int = 50_000) -> Tuple[np.ndarray, np.ndarray]:
+    def prepare_data(self, corpus_path: str = "corpus", max_length: int = 200_000) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Complete data preparation pipeline.
+        Complete multi-corpus data preparation pipeline.
         
         Args:
-            filepath: Path to text file
-            max_length: Maximum characters to process
+            corpus_path: Path to corpus directory containing multiple .txt files (default: "corpus")
+            max_length: Maximum total characters to process from all files
             
         Returns:
-            Tuple of prepared (X, y) arrays for training
+            Tuple of prepared (X, y) arrays for training from combined corpus
         """
-        print("📚 Starting data preparation pipeline...")
+        print("📚 MULTI-CORPUS DATA PREPARATION PIPELINE")
+        print("=" * 60)
         
-        # Load and preprocess text
-        text = self.load_text(filepath, max_length)
+        # Load and combine all corpus texts
+        text = self.load_text(corpus_path, max_length)
         
-        # Build vocabulary
+        # Build vocabulary from combined corpus
         self.build_vocabulary(text)
         
-        # Create training sequences
+        # Create training sequences from combined text
         X, y = self.create_sequences(text)
         
         return X, y

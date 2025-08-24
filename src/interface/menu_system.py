@@ -34,13 +34,14 @@ class AcademicMenuSystem:
     
     def show_header(self):
         """Display academic framework header."""
-        print("=" * 70)
+        print("=" * 75)
         print("🎓 ROBO-POET: ACADEMIC NEURAL TEXT GENERATION FRAMEWORK")
-        print("=" * 70)
-        print("📚 Version: 2.1 - Enhanced Phase 2 Generation Studio")
-        print("🏛️ Academic Interface: Two-Phase Learning System")
+        print("=" * 75)
+        print("📚 Version: 2.1 - Enhanced with Deep Analysis Suite")
+        print("🏛️ Features: Training • Generation • Analysis • Diagnosis")
+        print("🔬 New: Gradient Analysis & Loss Landscape Detection")
         print("⚡ Hardware: Optimized for NVIDIA RTX 2000 Ada + WSL2")
-        print("=" * 70)
+        print("=" * 75)
     
     def show_main_menu(self) -> str:
         """Display main academic menu and get user choice."""
@@ -49,18 +50,33 @@ class AcademicMenuSystem:
         print("🎓 FLUJO DE TRABAJO ACADÉMICO:")
         print("1. 🔥 FASE 1: Entrenamiento Intensivo (1+ hora)")
         print("2. 🎨 FASE 2: Generación de Texto (Estudio Avanzado)")
+        print("3. 📊 Ver Modelos Disponibles")
+        print()
+        print("🔬 ANÁLISIS Y DIAGNÓSTICO (NUEVO):")
+        print("4. 🏥 HOSPITAL: Cirugía de Gates LSTM")
+        print("5. 🔬 ANÁLISIS: Gradient Flow & Loss Landscape")
         print()
         print("📊 GESTIÓN Y MONITOREO:")
-        print("3. 📊 Ver Modelos Disponibles")
-        print("4. 📈 Monitorear Progreso de Entrenamiento")
-        print("5. 🧹 Limpiar Todos los Modelos")
+        print("6. 📈 Monitorear Progreso de Entrenamiento")
+        print("7. 🧹 Limpiar Todos los Modelos")
+        print()
+        print("🧪 TESTING Y VALIDACIÓN:")
+        print("8. 🧪 Suite de Tests Módulo 2 (Demo + Validación)")
+        print()
+        print("📁 ARCHIVOS Y VISUALIZACIÓN:")
+        print("A. 📝 Ver Logs y Archivos Generados")
+        print("B. 📈 Explorar Visualizaciones y Gráficos")
+        print()
+        print("🔬 HERRAMIENTAS AVANZADAS:")
+        print("C. 🎯 Attention Mechanism Demo & Validation")
+        print("D. 🏗️ Dataset Preprocessing Pipeline")
         print()
         print("⚙️ SISTEMA:")
-        print("6. ⚙️ Configuración y Estado del Sistema")
-        print("7. 🚪 Salir del Sistema")
+        print("9. ⚙️ Configuración y Estado del Sistema") 
+        print("0. 🚪 Salir del Sistema")
         print("=" * 50)
         
-        choice = input("🎯 Selecciona una opción (1-7): ").strip()
+        choice = input("🎯 Selecciona una opción (0-9, A-D): ").strip().upper()
         return choice
     
     def show_system_status(self):

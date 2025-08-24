@@ -1,0 +1,208 @@
+# ROBO-POET: Configuración Robusta Anti-Saturación
+# Creado por Bernard Orozco
+# Configuración a prueba de fallos para prevenir colapso de gradientes
+
+# ============================================================================
+# MODELO: Configuración Neural Anti-Colapso
+# ============================================================================
+model:
+  # Arquitectura conservadora pero efectiva
+  lstm_units: 256              # Reducido de 512 para estabilidad
+  embedding_dim: 128           # Óptimo para vocabularios <50k
+  dropout_rate: 0.4            # Aumentado para mayor regularización
+  recurrent_dropout: 0.3       # Dropout en conexiones recurrentes
+  sequence_length: 100         # Balance memoria-contexto
+  
+  # Inicialización de pesos específica
+  kernel_initializer: "glorot_uniform"
+  recurrent_initializer: "orthogonal"  # Mejor gradient flow
+  bias_initializer: "zeros"
+  
+  # Configuración de activaciones
+  recurrent_activation: "sigmoid"      # Estándar para gates
+  activation: "tanh"                   # Estándar para estado celular
+
+# ============================================================================
+# ENTRENAMIENTO: Parámetros Anti-Explosión/Vanishing
+# ============================================================================
+training:
+  # Learning Rate Conservador
+  initial_learning_rate: 0.0005       # Reducido de 0.001
+  min_learning_rate: 1e-6             # Floor mínimo
+  
+  # Optimizador con weight decay
+  optimizer: "adamw"
+  weight_decay: 0.01                   # Regularización adicional
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 1e-7
+  
+  # Batch y épocas
+  batch_size: 32                       # Óptimo para RTX 2000 Ada
+  max_epochs: 50
+  
+  # Gradient Clipping AGRESIVO
+  gradient_clipnorm: 0.5               # Muy conservador
+  gradient_clipvalue: 0.1              # Clip individual
+  
+  # Early Stopping estricto
+  early_stopping:
+    monitor: "val_loss"
+    patience: 5                        # Más estricto que 10
+    min_delta: 0.001
+    restore_best_weights: true
+
+# ============================================================================
+# MONITOREO: Sistema de Alerta Temprana
+# ============================================================================
+monitoring:
+  # Umbrales críticos para AntiSaturationCallback
+  critical_thresholds:
+    min_gradient_norm: 1e-4            # Detector vanishing
+    max_gradient_norm: 10.0            # Detector exploding
+    min_gate_activation: 0.01          # Gates casi cerrados
+    max_gate_activation: 0.99          # Gates saturados
+    loss_explosion_factor: 2.0         # Loss crece 2x = problema
+  
+  # Respuestas automáticas
+  auto_responses:
+    lr_reduction_factor: 0.5           # Reduce LR a la mitad
+    emergency_save: true               # Checkpoint automático
+    gradient_clip_aggressive: 0.1      # Clip de emergencia
+    
+  # Análisis de gradientes cada N batches
+  gradient_analysis_frequency: 100     # Cada 100 batches
+  checkpoint_frequency: 500           # Cada 500 batches
+
+# ============================================================================
+# HARDWARE: Optimización RTX 2000 Ada + WSL2
+# ============================================================================
+hardware:
+  # Mixed Precision para Tensor Cores
+  mixed_precision: true
+  policy: "mixed_float16"
+  
+  # Memoria GPU
+  memory_growth: true                  # Crecimiento dinámico
+  memory_limit_mb: 7000               # Reservar 1GB sistema
+  
+  # Paralelización
+  inter_op_parallelism: 4
+  intra_op_parallelism: 8
+  
+  # XLA compilation
+  jit_compile: true                    # Optimización de kernels
+
+# ============================================================================
+# GENERACIÓN: Parámetros de Sampling Estables
+# ============================================================================
+generation:
+  # Temperature sampling conservador
+  default_temperature: 0.8            # Balance creatividad-coherencia
+  min_temperature: 0.3                # Muy conservador
+  max_temperature: 1.2                # Máximo creativo
+  
+  # Nucleus sampling
+  top_p: 0.9                          # 90% probabilidad acumulada
+  top_k: 50                           # Top 50 tokens
+  
+  # Control de repetición
+  repetition_penalty: 1.1             # Penalizar repeticiones
+  max_length: 500                     # Límite generación
+  
+  # Seeds para reproducibilidad
+  random_seed: 42
+
+# ============================================================================
+# DIAGNÓSTICO: Configuración de Análisis
+# ============================================================================
+diagnostics:
+  # Métricas críticas a monitorear
+  track_metrics:
+    - "gradient_norm_by_layer"
+    - "gate_activation_distribution"
+    - "weight_magnitude_evolution"
+    - "loss_landscape_sharpness"
+  
+  # Frecuencia de análisis completo
+  full_analysis_epochs: [1, 5, 10, 15, 20]
+  
+  # Guardado de visualizaciones
+  save_plots: true
+  plot_format: "png"
+  plot_dpi: 300
+
+# ============================================================================
+# PATHS: Configuración de archivos
+# ============================================================================
+paths:
+  # Directorios base
+  models_dir: "models"
+  checkpoints_dir: "checkpoints"
+  logs_dir: "logs"
+  analysis_dir: "analysis"
+  
+  # Archivos específicos
+  training_log: "logs/training_robust.log"
+  analysis_output: "analysis/gradient_analysis"
+  emergency_backup: "checkpoints/emergency"
+
+# ============================================================================
+# LOGGING: Configuración detallada
+# ============================================================================
+logging:
+  level: "INFO"
+  format: "[%(asctime)s] %(levelname)s - %(message)s"
+  
+  # Logs específicos
+  gradient_log: true
+  loss_log: true
+  gate_log: true
+  memory_log: true
+  
+  # TensorBoard
+  tensorboard:
+    enabled: true
+    update_freq: "batch"
+    histogram_freq: 10
+    write_graph: true
+    write_images: false
+
+# ============================================================================
+# RECOVERY: Plan de Recuperación Automática
+# ============================================================================
+recovery:
+  # Criterios de fallo
+  failure_detection:
+    consecutive_nan_loss: 3            # 3 NaN seguidos = fallo
+    gradient_explosion_count: 5        # 5 explosiones = reset
+    gate_saturation_duration: 10       # 10 épocas saturadas = cirugía
+  
+  # Acciones automáticas
+  auto_recovery:
+    enabled: true
+    surgery_on_saturation: true        # Cirugía automática
+    lr_reset_on_explosion: true        # Reset learning rate
+    model_rollback: true               # Volver a mejor checkpoint
+
+# ============================================================================
+# VALIDATION: Tests de Integridad
+# ============================================================================
+validation:
+  # Pre-entrenamiento
+  pre_training_checks:
+    - "gradient_flow_test"
+    - "forward_pass_stability"
+    - "memory_allocation_test"
+  
+  # Durante entrenamiento
+  runtime_checks:
+    - "nan_detection"
+    - "gradient_norm_bounds"
+    - "loss_monotonicity"
+  
+  # Post-entrenamiento
+  post_training_checks:
+    - "generation_quality"
+    - "model_stability"
+    - "checkpoint_integrity"
