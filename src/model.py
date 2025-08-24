@@ -77,8 +77,8 @@ class LSTMTextGenerator:
     
     def __init__(self, vocab_size: int, sequence_length: int, 
                  lstm_units: int = 256, 
-                 variational_dropout_rate: float = 0.3,
-                 dropconnect_rate: float = 0.2,
+                 variational_dropout_rate: float = 0.5,  # Increased for anti-overfitting
+                 dropconnect_rate: float = 0.3,  # Increased for anti-overfitting
                  embedding_dim: int = 128):
         """
         Initialize Weight-Dropped LSTM text generator.
@@ -181,9 +181,9 @@ class LSTMTextGenerator:
         # Create model
         self.model = Model(inputs=inputs, outputs=outputs, name='lstm_text_generator')
         
-        # Compile model with REDUCED learning rate for intensive training
-        # Lower LR = slower but more stable convergence = longer training time
-        intensive_lr = 0.0003  # 3x slower than default for quality results
+        # Compile model with ULTRA-LOW learning rate for anti-overfitting
+        # Ultra-low LR = much slower but prevents overfitting
+        intensive_lr = 0.0001  # 10x slower than default - ANTI-OVERFITTING mode
         
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=intensive_lr),
@@ -191,7 +191,8 @@ class LSTMTextGenerator:
             metrics=['accuracy']
         )
         
-        print(f"🐌 SLOW & INTENSIVE mode: Learning rate = {intensive_lr} (3x slower)")
+        print(f"🐌 ULTRA-SLOW ANTI-OVERFITTING mode: Learning rate = {intensive_lr} (10x slower)")
+        print(f"🛡️ Regularization: Variational Dropout = 0.5, DropConnect = 0.3")
         
         # Apply weight tying after model creation
         # This needs to be done in a callback during training
