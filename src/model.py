@@ -181,12 +181,17 @@ class LSTMTextGenerator:
         # Create model
         self.model = Model(inputs=inputs, outputs=outputs, name='lstm_text_generator')
         
-        # Compile model
+        # Compile model with REDUCED learning rate for intensive training
+        # Lower LR = slower but more stable convergence = longer training time
+        intensive_lr = 0.0003  # 3x slower than default for quality results
+        
         self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+            optimizer=tf.keras.optimizers.Adam(learning_rate=intensive_lr),
             loss='sparse_categorical_crossentropy',  # Changed: Use sparse for integer targets
             metrics=['accuracy']
         )
+        
+        print(f"🐌 SLOW & INTENSIVE mode: Learning rate = {intensive_lr} (3x slower)")
         
         # Apply weight tying after model creation
         # This needs to be done in a callback during training
@@ -310,12 +315,22 @@ class ModelTrainer:
         print(f"   Batch size: {batch_size}, Epochs: {epochs}")
         print(f"   Validation split: {validation_split:.1%}")
         
-        # Setup callbacks with patience based on total epochs
-        # For long training (50+ epochs), use higher patience
-        early_patience = max(15, epochs // 6) if epochs >= 50 else 10
-        print(f"⚙️ Early stopping patience: {early_patience} epochs")
-        print(f"⚙️ LR reduction patience: {max(8, early_patience//2)} epochs")
-        callbacks = self._setup_callbacks(patience=early_patience)
+        # Setup callbacks with MUCH higher patience for intensive training
+        # For 100+ epochs: MINIMUM 25 epochs patience, preferably more
+        if epochs >= 100:
+            early_patience = max(25, epochs // 4)  # 25+ epochs for 100+
+        elif epochs >= 50:
+            early_patience = max(20, epochs // 3)  # 20+ epochs for 50+
+        else:
+            early_patience = 15  # Higher default
+            
+        lr_patience = max(10, early_patience // 2)  # More conservative LR reduction
+        
+        print(f"⚙️ INTENSIVE TRAINING MODE:")
+        print(f"   🛡️ Early stopping patience: {early_patience} epochs (VERY patient)")
+        print(f"   📉 LR reduction patience: {lr_patience} epochs (Conservative)")
+        print(f"   🎯 Target: Let model train MUCH longer for quality results")
+        callbacks = self._setup_callbacks(patience=early_patience, lr_patience=lr_patience)
         
         # Train on specified device
         with tf.device(self.device):
@@ -337,7 +352,7 @@ class ModelTrainer:
         
         return self.history
     
-    def _setup_callbacks(self, patience: int = 10, weight_tying_callback=None) -> list:
+    def _setup_callbacks(self, patience: int = 10, lr_patience: int = None, weight_tying_callback=None) -> list:
         """
         Setup training callbacks including weight tying for Strategy 2.3.
         
@@ -357,9 +372,9 @@ class ModelTrainer:
             ),
             tf.keras.callbacks.ReduceLROnPlateau(
                 monitor='val_loss',
-                factor=0.5,
-                patience=max(8, patience//2),  # At least 8 epochs patience
-                min_lr=1e-6,
+                factor=0.7,  # Less aggressive reduction (was 0.5)
+                patience=lr_patience if lr_patience else max(8, patience//2),
+                min_lr=1e-7,  # Allow even lower LR for intensive training
                 verbose=1
             ),
             tf.keras.callbacks.ModelCheckpoint(
