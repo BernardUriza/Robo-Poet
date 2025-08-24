@@ -193,6 +193,10 @@ class LSTMTextGenerator:
         
         print(f"🐌 ULTRA-SLOW ANTI-OVERFITTING mode: Learning rate = {intensive_lr} (10x slower)")
         print(f"🛡️ Regularization: Variational Dropout = 0.5, DropConnect = 0.3")
+        print(f"🎯 SUCCESS METRICS:")
+        print(f"   📊 Current level: Loss ~6.5 (basic words)")  
+        print(f"   🏆 Target level: Loss 2.0-3.0 (coherent sentences)")
+        print(f"   ⭐ Elite level: Loss < 2.0 (human-like text)")
         
         # Apply weight tying after model creation
         # This needs to be done in a callback during training
@@ -316,21 +320,22 @@ class ModelTrainer:
         print(f"   Batch size: {batch_size}, Epochs: {epochs}")
         print(f"   Validation split: {validation_split:.1%}")
         
-        # Setup callbacks with MUCH higher patience for intensive training
-        # For 100+ epochs: MINIMUM 25 epochs patience, preferably more
+        # Setup callbacks for EPIC TRAINING MODE (3-4 hours for Loss 2.0-3.0)
+        # ULTRA-HIGH patience for professional quality results
         if epochs >= 100:
-            early_patience = max(25, epochs // 4)  # 25+ epochs for 100+
+            early_patience = max(50, epochs // 2)  # 50+ epochs for 100 (was 25)
         elif epochs >= 50:
-            early_patience = max(20, epochs // 3)  # 20+ epochs for 50+
+            early_patience = max(40, epochs // 2)  # 40+ epochs for 50 (was 20)
         else:
-            early_patience = 15  # Higher default
+            early_patience = 25  # Much higher default (was 15)
             
-        lr_patience = max(10, early_patience // 2)  # More conservative LR reduction
+        lr_patience = max(20, early_patience // 2)  # VERY conservative LR reduction
         
-        print(f"⚙️ INTENSIVE TRAINING MODE:")
-        print(f"   🛡️ Early stopping patience: {early_patience} epochs (VERY patient)")
-        print(f"   📉 LR reduction patience: {lr_patience} epochs (Conservative)")
-        print(f"   🎯 Target: Let model train MUCH longer for quality results")
+        print(f"🏰 EPIC TRAINING MODE - TARGET: Loss 2.0-3.0")
+        print(f"   🛡️ Early stopping patience: {early_patience} epochs (ULTRA patient)")
+        print(f"   📉 LR reduction patience: {lr_patience} epochs (VERY conservative)")
+        print(f"   ⏰ Expected time: 3-4 HOURS for professional quality")
+        print(f"   🎯 Minimum 50 epochs training for coherent text")
         callbacks = self._setup_callbacks(patience=early_patience, lr_patience=lr_patience)
         
         # Train on specified device
@@ -373,9 +378,9 @@ class ModelTrainer:
             ),
             tf.keras.callbacks.ReduceLROnPlateau(
                 monitor='val_loss',
-                factor=0.7,  # Less aggressive reduction (was 0.5)
+                factor=0.8,  # VERY gentle reduction for epic training (was 0.7)
                 patience=lr_patience if lr_patience else max(8, patience//2),
-                min_lr=1e-7,  # Allow even lower LR for intensive training
+                min_lr=1e-8,  # Ultra-low LR for epic fine-tuning
                 verbose=1
             ),
             tf.keras.callbacks.ModelCheckpoint(
