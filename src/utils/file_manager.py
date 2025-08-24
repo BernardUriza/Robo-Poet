@@ -34,11 +34,13 @@ class FileManager:
         if not self.models_dir.exists():
             return []
         
-        # Find both .keras and .h5 models for backward compatibility
-        keras_models = list(self.models_dir.glob("robo_poet_model_*.keras"))
-        h5_models = list(self.models_dir.glob("robo_poet_model_*.h5"))
+        # Find ALL .keras and .h5 models (not just robo_poet_model_*)
+        keras_models = list(self.models_dir.glob("*.keras"))
+        h5_models = list(self.models_dir.glob("*.h5"))
         
-        all_models = keras_models + h5_models
+        # Exclude checkpoint files
+        all_models = [m for m in keras_models + h5_models 
+                     if not m.name.startswith('checkpoint_')]
         
         # Sort by modification time (newest first)
         return sorted([str(model) for model in all_models], 
