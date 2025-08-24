@@ -484,8 +484,7 @@ def mock_tensorflow():
     tf_mock = MockTensorFlow()
     
     with patch.dict('sys.modules', {'tensorflow': tf_mock}):
-        with patch('tensorflow', tf_mock):
-            yield tf_mock
+        yield tf_mock
 
 
 @pytest.fixture
@@ -503,8 +502,7 @@ def mock_gpu_available():
     tf_mock.test.is_gpu_available.return_value = True
     
     with patch.dict('sys.modules', {'tensorflow': tf_mock}):
-        with patch('tensorflow', tf_mock):
-            yield tf_mock
+        yield tf_mock
 
 
 @pytest.fixture
@@ -524,8 +522,7 @@ def mock_gpu_unavailable():
     tf_mock.device.side_effect = gpu_error
     
     with patch.dict('sys.modules', {'tensorflow': tf_mock}):
-        with patch('tensorflow', tf_mock):
-            yield tf_mock
+        yield tf_mock
 
 
 @contextmanager
@@ -554,8 +551,7 @@ def mock_gpu_environment(gpu_available: bool = True,
         tf_mock.keras.mixed_precision.Policy = Mock(return_value=Mock(name='mixed_float16'))
     
     with patch.dict('sys.modules', {'tensorflow': tf_mock}):
-        with patch('tensorflow', tf_mock):
-            yield tf_mock
+        yield tf_mock
 
 
 # Decoradores para tests

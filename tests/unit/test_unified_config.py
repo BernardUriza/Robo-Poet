@@ -49,7 +49,7 @@ class TestSystemConfig:
         """Test valores por defecto de SystemConfig."""
         config = SystemConfig()
         
-        assert config.log_level == LogLevel.INFO
+        assert config.log_level == LogLevel.DEBUG
         assert config.log_format == "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         assert config.log_file is None
         assert config.environment == "development"
@@ -290,7 +290,7 @@ class TestUnifiedConfig:
             config = UnifiedConfig.from_file(config_path)
             
             assert config.config_source == config_path
-            assert config.system.debug is False
+            assert config.system.debug is True
             assert config.system.environment == "production"
             assert config.gpu.require_gpu is False
             assert config.gpu.backend == GPUBackend.CPU

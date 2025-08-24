@@ -79,6 +79,52 @@ class GPUSettings(BaseSettings):
     model_config = {"env_prefix": "GPU_"}
 
 
+class ModelSettings(BaseSettings):
+    """Model architecture configuration settings."""
+    
+    sequence_length: int = Field(
+        default=100,
+        description="Sequence length for training"
+    )
+    lstm_units: int = Field(
+        default=256,
+        description="Number of LSTM units"
+    )
+    dropout_rate: float = Field(
+        default=0.3,
+        description="Dropout rate for regularization"
+    )
+    vocab_size: int = Field(
+        default=10000,
+        description="Vocabulary size"
+    )
+    embedding_dim: int = Field(
+        default=128,
+        description="Embedding dimension"
+    )
+    batch_size: int = Field(
+        default=64,
+        description="Training batch size"
+    )
+    epochs: int = Field(
+        default=100,
+        description="Number of training epochs"
+    )
+    model_type: str = Field(
+        default="lstm",
+        description="Model architecture type"
+    )
+    
+    @field_validator('dropout_rate')
+    @classmethod
+    def validate_dropout(cls, v):
+        if not 0 <= v <= 1:
+            raise ValueError('dropout_rate must be between 0 and 1')
+        return v
+    
+    model_config = {"env_prefix": "MODEL_"}
+
+
 class TrainingSettings(BaseSettings):
     """Training-specific configuration settings."""
     
@@ -255,6 +301,7 @@ class Settings(BaseSettings):
     # Component settings
     database: DatabaseSettings = DatabaseSettings()
     gpu: GPUSettings = GPUSettings()
+    model: ModelSettings = ModelSettings()
     training: TrainingSettings = TrainingSettings()
     storage: StorageSettings = StorageSettings()
     security: SecuritySettings = SecuritySettings()

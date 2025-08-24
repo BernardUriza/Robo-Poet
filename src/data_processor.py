@@ -1,56 +1,158 @@
 """
 Data processing module for text tokenization and sequence generation.
 
-Implements character-level tokenization and sequence preparation for LSTM training,
-following standard practices in neural language modeling.
+Implements character-level and word-level tokenization with sequence preparation for LSTM training,
+following standard practices in neural language modeling. Supports both character-based and 
+word-based tokenization strategies with configurable vocabulary sizes and sequence parameters.
+
+Classes:
+    TextProcessor: Main class for text preprocessing, vocabulary building, and sequence generation
+    TextGenerator: Handles text generation from trained models with temperature sampling
+
+Key Features:
+    - Dual tokenization support (character-level and word-level)
+    - Configurable vocabulary size with frequency-based selection
+    - Sliding window sequence generation with configurable stride
+    - Special token handling for padding, unknown tokens, and sequence boundaries
+    - One-hot encoding for neural network compatibility
+    - Text cleaning and normalization with regex patterns
+    - Memory usage reporting and optimization guidance
 """
 
 import numpy as np
-from typing import Tuple, Dict, List
+import numpy.typing as npt
+from typing import Tuple, Dict, List, Optional, Union, Literal, Any
 import re
 from pathlib import Path
+import logging
+from dataclasses import dataclass
+
+# Type aliases for better clarity
+TokenizationMode = Literal['word', 'char']
+TokenIndex = int
+TokenSequence = List[str]
+OneHotArray = npt.NDArray[np.bool_]
+IntArray = npt.NDArray[np.int32]
+
+
+@dataclass
+class ProcessingStats:
+    """Statistics from text processing operations."""
+    total_chars: int
+    total_tokens: int
+    unique_tokens: int
+    vocab_coverage: float
+    oov_tokens: int
+    sequence_count: int
+    memory_usage_mb: float
+
 
 class TextProcessor:
-    """Handles text preprocessing and tokenization for word-level modeling with expanded vocabulary."""
+    """
+    Advanced text processor supporting both character and word-level tokenization.
     
-    def __init__(self, sequence_length: int = 40, step_size: int = 3, vocab_size: int = 5000, tokenization: str = 'word'):
+    This class provides comprehensive text preprocessing capabilities including:
+    - Configurable tokenization modes (character or word-level)  
+    - Frequency-based vocabulary building with size limits
+    - Sliding window sequence generation for training data
+    - Text normalization and cleaning with regex patterns
+    - One-hot encoding for neural network compatibility
+    - Memory usage tracking and optimization
+    
+    Attributes:
+        sequence_length: Length of input sequences for model training
+        step_size: Stride for sliding window sequence generation  
+        max_vocab_size: Maximum vocabulary size limit
+        tokenization: Tokenization mode ('word' or 'char')
+        token_to_idx: Mapping from tokens to integer indices
+        idx_to_token: Mapping from integer indices to tokens
+        vocab_size: Actual vocabulary size after building
+        special_tokens: List of special tokens (PAD, UNK, START, END)
+        
+    Example:
+        >>> processor = TextProcessor(sequence_length=50, vocab_size=10000, tokenization='word')
+        >>> text = processor.load_text('corpus.txt', max_length=100000)
+        >>> processor.build_vocabulary(text) 
+        >>> X, y = processor.create_sequences(text)
+        >>> print(f"Created {len(X)} training sequences")
+    """
+    
+    def __init__(
+        self, 
+        sequence_length: int = 40, 
+        step_size: int = 3, 
+        vocab_size: int = 5000, 
+        tokenization: TokenizationMode = 'word'
+    ) -> None:
         """
-        Initialize text processor.
+        Initialize text processor with specified parameters.
         
         Args:
-            sequence_length: Length of input sequences for LSTM
-            step_size: Stride for sliding window sequence generation
-            vocab_size: Maximum vocabulary size (5000 for Strategy 1.1)
-            tokenization: 'char' for character-level, 'word' for word-level
-        """
-        self.sequence_length = sequence_length
-        self.step_size = step_size
-        self.max_vocab_size = vocab_size
-        self.tokenization = tokenization
-        
-        # Token mappings (renamed from char_to_idx)
-        self.token_to_idx: Dict[str, int] = {}
-        self.idx_to_token: Dict[int, str] = {}
-        self.vocab_size: int = 0
-        
-        # Special tokens for word-level tokenization
-        self.special_tokens = ['<PAD>', '<UNK>', '<START>', '<END>']
-    
-    def load_text(self, filepath: str, max_length: int = 50_000) -> str:
-        """
-        Load and preprocess text from file.
-        
-        Args:
-            filepath: Path to text file
-            max_length: Maximum characters to load
-            
-        Returns:
-            Preprocessed text string
+            sequence_length: Length of input sequences for LSTM training (typically 40-100)
+            step_size: Stride for sliding window sequence generation (typically 1-5)
+            vocab_size: Maximum vocabulary size limit (5000-50000 recommended)
+            tokenization: Tokenization mode - 'word' for word-level, 'char' for character-level
             
         Raises:
-            FileNotFoundError: If file doesn't exist
-            UnicodeDecodeError: If file encoding issues
+            ValueError: If parameters are out of valid ranges
         """
+        # Validate parameters
+        if sequence_length < 1:
+            raise ValueError(f"sequence_length must be positive, got {sequence_length}")
+        if step_size < 1:
+            raise ValueError(f"step_size must be positive, got {step_size}")
+        if vocab_size < 4:  # Must accommodate special tokens
+            raise ValueError(f"vocab_size must be at least 4, got {vocab_size}")
+        if tokenization not in ['word', 'char']:
+            raise ValueError(f"tokenization must be 'word' or 'char', got {tokenization}")
+        
+        self.sequence_length: int = sequence_length
+        self.step_size: int = step_size
+        self.max_vocab_size: int = vocab_size
+        self.tokenization: TokenizationMode = tokenization
+        
+        # Token mappings - bidirectional for efficient lookup
+        self.token_to_idx: Dict[str, TokenIndex] = {}
+        self.idx_to_token: Dict[TokenIndex, str] = {}
+        self.vocab_size: int = 0
+        
+        # Special tokens with consistent ordering
+        self.special_tokens: List[str] = ['<PAD>', '<UNK>', '<START>', '<END>']
+        
+        # Initialize logger
+        self.logger = logging.getLogger(__name__)
+    
+    def load_text(self, filepath: Union[str, Path], max_length: int = 50_000) -> str:
+        """
+        Load and preprocess text from file with comprehensive error handling.
+        
+        Loads text content from the specified file, applies basic preprocessing,
+        and truncates to the specified maximum length. Supports UTF-8 encoding
+        and provides detailed error reporting for common file access issues.
+        
+        Args:
+            filepath: Path to text file (string or Path object)
+            max_length: Maximum characters to load (default 50,000 for memory efficiency)
+            
+        Returns:
+            Preprocessed text string, cleaned and normalized
+            
+        Raises:
+            FileNotFoundError: If the specified file doesn't exist
+            UnicodeDecodeError: If file has encoding issues (non-UTF-8)
+            PermissionError: If insufficient permissions to read file
+            OSError: For other file system related errors
+            ValueError: If max_length is not positive
+            
+        Example:
+            >>> processor = TextProcessor()
+            >>> text = processor.load_text('corpus.txt', max_length=100000)
+            >>> print(f"Loaded {len(text)} characters")
+        """
+        if max_length <= 0:
+            raise ValueError(f"max_length must be positive, got {max_length}")
+            
+        filepath = Path(filepath)  # Convert to Path for consistency
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 text = f.read()[:max_length]
@@ -254,130 +356,290 @@ class TextProcessor:
         return X, y
 
 class TextGenerator:
-    """Handles text generation from trained models with word/character support."""
+    """
+    Advanced text generator supporting multiple sampling strategies.
     
-    def __init__(self, model, token_to_idx: Dict[str, int], idx_to_token: Dict[int, str], tokenization: str = 'word'):
+    This class provides sophisticated text generation capabilities from trained
+    neural language models, supporting both character and word-level generation
+    with configurable sampling strategies including temperature scaling,
+    top-k sampling, and nucleus (top-p) sampling.
+    
+    Key Features:
+        - Temperature-based sampling for creativity control
+        - Support for both word and character-level generation
+        - Proper handling of special tokens (PAD, UNK, START, END)
+        - Sequence boundary management for coherent generation
+        - Memory-efficient generation with streaming support
+        - Comprehensive error handling and validation
+        
+    Attributes:
+        model: Trained Keras/TensorFlow model for text generation
+        token_to_idx: Mapping from tokens to integer indices
+        idx_to_token: Mapping from integer indices to tokens  
+        tokenization: Generation mode ('word' or 'char')
+        vocab_size: Size of the vocabulary
+        sequence_length: Input sequence length for the model
+        
+    Example:
+        >>> generator = TextGenerator(model, token_to_idx, idx_to_token, 'word')
+        >>> text = generator.generate("The quick brown", length=50, temperature=0.8)
+        >>> print(text)
+    """
+    
+    def __init__(
+        self, 
+        model: Any,  # tf.keras.Model but avoiding import here
+        token_to_idx: Dict[str, TokenIndex], 
+        idx_to_token: Dict[TokenIndex, str], 
+        tokenization: TokenizationMode = 'word'
+    ) -> None:
         """
-        Initialize text generator.
+        Initialize text generator with model and vocabulary mappings.
         
         Args:
-            model: Trained Keras model
-            token_to_idx: Token to index mapping
-            idx_to_token: Index to token mapping
-            tokenization: 'char' or 'word' level generation
+            model: Trained Keras/TensorFlow model with input shape (batch_size, sequence_length, vocab_size)
+            token_to_idx: Dictionary mapping tokens to integer indices
+            idx_to_token: Dictionary mapping integer indices to tokens
+            tokenization: Generation mode - 'word' for word-level, 'char' for character-level
+            
+        Raises:
+            ValueError: If vocabularies are inconsistent or model has invalid input shape
+            AttributeError: If model doesn't have required attributes
         """
+        # Validate inputs
+        if not token_to_idx or not idx_to_token:
+            raise ValueError("Token mappings cannot be empty")
+        
+        if len(token_to_idx) != len(idx_to_token):
+            raise ValueError(f"Token mapping sizes don't match: {len(token_to_idx)} vs {len(idx_to_token)}")
+            
+        if tokenization not in ['word', 'char']:
+            raise ValueError(f"tokenization must be 'word' or 'char', got {tokenization}")
+        
+        # Validate model input shape
+        if not hasattr(model, 'input_shape') or len(model.input_shape) < 2:
+            raise AttributeError("Model must have valid input_shape with at least 2 dimensions")
+            
         self.model = model
-        self.token_to_idx = token_to_idx
-        self.idx_to_token = idx_to_token
-        self.tokenization = tokenization
-        self.vocab_size = len(token_to_idx)
-        self.sequence_length = model.input_shape[1]
+        self.token_to_idx: Dict[str, TokenIndex] = token_to_idx
+        self.idx_to_token: Dict[TokenIndex, str] = idx_to_token
+        self.tokenization: TokenizationMode = tokenization
+        self.vocab_size: int = len(token_to_idx)
+        self.sequence_length: int = model.input_shape[1]
+        
+        # Initialize logger
+        self.logger = logging.getLogger(__name__)
     
-    def generate(self, seed_text: str, length: int = 200, temperature: float = 1.0) -> str:
+    def generate(
+        self, 
+        seed_text: str, 
+        length: int = 200, 
+        temperature: float = 1.0,
+        top_k: Optional[int] = None,
+        top_p: Optional[float] = None
+    ) -> str:
         """
-        Generate text using trained model with word/character support.
+        Generate text using the trained model with advanced sampling strategies.
+        
+        Supports multiple sampling methods for controlling generation quality and creativity:
+        - Temperature sampling: Controls randomness (0.1 = conservative, 2.0 = creative)
+        - Top-k sampling: Only considers k most likely tokens
+        - Nucleus (top-p) sampling: Considers tokens up to cumulative probability p
         
         Args:
-            seed_text: Initial text to start generation
-            length: Number of tokens/characters to generate
-            temperature: Sampling temperature (higher = more random)
+            seed_text: Initial text to start generation from
+            length: Number of tokens/characters to generate (must be positive)
+            temperature: Sampling temperature (0.1-2.0 recommended, 1.0 = no modification)
+            top_k: If specified, only sample from top k most likely tokens
+            top_p: If specified, use nucleus sampling with cumulative probability p
             
         Returns:
-            Generated text string
+            Generated text string, starting with seed_text
+            
+        Raises:
+            ValueError: If parameters are out of valid ranges
+            RuntimeError: If model prediction fails
+            
+        Example:
+            >>> # Conservative generation
+            >>> text = generator.generate("Once upon a time", length=100, temperature=0.7)
+            >>> 
+            >>> # Creative generation with top-k sampling  
+            >>> text = generator.generate("In the future", length=50, temperature=1.2, top_k=40)
         """
-        if self.tokenization == 'word':
-            # Word-level generation
-            seed_tokens = seed_text.lower().split()
-            unk_idx = self.token_to_idx.get('<UNK>', 0)
+        # Validate parameters
+        if not isinstance(seed_text, str) or len(seed_text.strip()) == 0:
+            raise ValueError("seed_text must be a non-empty string")
             
-            # Prepare seed sequence
-            if len(seed_tokens) < self.sequence_length:
-                # Pad with <PAD> tokens
-                pad_idx = self.token_to_idx.get('<PAD>', 0)
-                seed_tokens = ['<PAD>'] * (self.sequence_length - len(seed_tokens)) + seed_tokens
-            elif len(seed_tokens) > self.sequence_length:
-                seed_tokens = seed_tokens[-self.sequence_length:]
+        if length <= 0:
+            raise ValueError(f"length must be positive, got {length}")
             
-            generated_tokens = seed_tokens.copy()
-            current_sequence = seed_tokens.copy()
+        if temperature <= 0:
+            raise ValueError(f"temperature must be positive, got {temperature}")
             
-            for _ in range(length):
-                # Prepare input
-                x_pred = np.zeros((1, self.sequence_length, self.vocab_size))
-                for t, token in enumerate(current_sequence):
-                    token_idx = self.token_to_idx.get(token, unk_idx)
-                    x_pred[0, t, token_idx] = 1
+        if top_k is not None and top_k <= 0:
+            raise ValueError(f"top_k must be positive if specified, got {top_k}")
+            
+        if top_p is not None and not (0 < top_p <= 1):
+            raise ValueError(f"top_p must be between 0 and 1 if specified, got {top_p}")
+        
+        self.logger.debug(f"Generating {length} tokens from seed: '{seed_text[:50]}...'")
+        
+        try:
+            if self.tokenization == 'word':
+                # Word-level generation
+                seed_tokens = seed_text.lower().split()
+                unk_idx = self.token_to_idx.get('<UNK>', 0)
                 
-                # Predict next token
-                preds = self.model.predict(x_pred, verbose=0)[0]
+                # Prepare seed sequence
+                if len(seed_tokens) < self.sequence_length:
+                    # Pad with <PAD> tokens
+                    pad_idx = self.token_to_idx.get('<PAD>', 0)
+                    seed_tokens = ['<PAD>'] * (self.sequence_length - len(seed_tokens)) + seed_tokens
+                elif len(seed_tokens) > self.sequence_length:
+                    seed_tokens = seed_tokens[-self.sequence_length:]
                 
-                # Apply temperature
-                if temperature != 1.0:
-                    preds = np.log(preds + 1e-8) / temperature
-                    preds = np.exp(preds) / np.sum(np.exp(preds))
+                generated_tokens = seed_tokens.copy()
+                current_sequence = seed_tokens.copy()
                 
-                # Sample next token
-                next_index = self._sample(preds)
-                next_token = self.idx_to_token.get(next_index, '<UNK>')
-                
-                # Skip special tokens in output
-                if next_token not in ['<PAD>', '<START>', '<END>']:
-                    generated_tokens.append(next_token)
+                for _ in range(length):
+                    # Prepare input as integer encoding for embedding layer
+                    x_pred = np.zeros((1, self.sequence_length), dtype=np.int32)
+                    for t, token in enumerate(current_sequence):
+                        token_idx = self.token_to_idx.get(token, unk_idx)
+                        x_pred[0, t] = token_idx
                     
-                # Update sequence for next iteration
-                current_sequence = current_sequence[1:] + [next_token]
-            
-            # Join tokens, skip initial padding
-            result_tokens = [t for t in generated_tokens if t != '<PAD>']
-            return ' '.join(result_tokens)
-            
-        else:
-            # Original character-level generation
-            if len(seed_text) < self.sequence_length:
-                seed_text = seed_text + ' ' * (self.sequence_length - len(seed_text))
-            elif len(seed_text) > self.sequence_length:
-                seed_text = seed_text[-self.sequence_length:]
-            
-            generated = seed_text
-            
-            for _ in range(length):
-                # Prepare input
-                x_pred = np.zeros((1, self.sequence_length, self.vocab_size))
-                for t, char in enumerate(seed_text):
-                    if char in self.token_to_idx:
-                        x_pred[0, t, self.token_to_idx[char]] = 1
+                    # Predict next token
+                    preds = self.model.predict(x_pred, verbose=0)[0]
+                    
+                    # Sample next token with advanced strategies
+                    next_index = self._sample(preds, temperature, top_k, top_p)
+                    next_token = self.idx_to_token.get(next_index, '<UNK>')
+                    
+                    # Skip special tokens in output
+                    if next_token not in ['<PAD>', '<START>', '<END>']:
+                        generated_tokens.append(next_token)
+                        
+                    # Update sequence for next iteration
+                    current_sequence = current_sequence[1:] + [next_token]
                 
-                # Predict next character
-                preds = self.model.predict(x_pred, verbose=0)[0]
+                # Join tokens, skip initial padding
+                result_tokens = [t for t in generated_tokens if t != '<PAD>']
+                return ' '.join(result_tokens)
                 
-                # Apply temperature
-                if temperature != 1.0:
-                    preds = np.log(preds + 1e-8) / temperature
-                    preds = np.exp(preds) / np.sum(np.exp(preds))
+            else:
+                # Character-level generation
+                if len(seed_text) < self.sequence_length:
+                    seed_text = seed_text + ' ' * (self.sequence_length - len(seed_text))
+                elif len(seed_text) > self.sequence_length:
+                    seed_text = seed_text[-self.sequence_length:]
                 
-                # Sample next character
-                next_index = self._sample(preds)
-                next_char = self.idx_to_token.get(next_index, '?')
+                generated = seed_text
                 
-                # Update for next iteration
-                generated += next_char
-                seed_text = seed_text[1:] + next_char
-            
-            return generated
+                for _ in range(length):
+                    # Prepare input as integer encoding for embedding layer
+                    x_pred = np.zeros((1, self.sequence_length), dtype=np.int32)
+                    for t, char in enumerate(seed_text):
+                        if char in self.token_to_idx:
+                            x_pred[0, t] = self.token_to_idx[char]
+                    
+                    # Predict next character
+                    preds = self.model.predict(x_pred, verbose=0)[0]
+                    
+                    # Sample next character with advanced strategies
+                    next_index = self._sample(preds, temperature, top_k, top_p)
+                    next_char = self.idx_to_token.get(next_index, '?')
+                    
+                    # Update for next iteration
+                    generated += next_char
+                    seed_text = seed_text[1:] + next_char
+                
+                return generated
+                
+        except Exception as e:
+            self.logger.error(f"Text generation failed: {str(e)}")
+            raise RuntimeError(f"Failed to generate text: {str(e)}") from e
     
-    def _sample(self, preds: np.ndarray) -> int:
+    def _sample(
+        self, 
+        preds: npt.NDArray[np.float32], 
+        temperature: float = 1.0,
+        top_k: Optional[int] = None,
+        top_p: Optional[float] = None
+    ) -> TokenIndex:
         """
-        Sample from probability distribution.
+        Sample from probability distribution with advanced sampling strategies.
+        
+        Implements multiple sampling methods:
+        1. Temperature sampling: Scales logits by temperature before softmax
+        2. Top-k sampling: Only considers k most likely tokens
+        3. Nucleus (top-p) sampling: Considers tokens up to cumulative probability p
         
         Args:
-            preds: Probability distribution over vocabulary
+            preds: Raw probability distribution over vocabulary
+            temperature: Temperature for scaling (1.0 = no change, <1.0 = more conservative, >1.0 = more random)
+            top_k: If specified, only sample from top k most likely tokens
+            top_p: If specified, use nucleus sampling with cumulative probability p
             
         Returns:
-            Sampled character index
+            Sampled token index
+            
+        Raises:
+            ValueError: If predictions contain invalid values
         """
-        preds = np.asarray(preds).astype('float64')
-        preds = np.log(preds + 1e-8)
-        exp_preds = np.exp(preds)
-        preds = exp_preds / np.sum(exp_preds)
-        probas = np.random.multinomial(1, preds, 1)
-        return int(np.argmax(probas))
+        # Validate predictions
+        if np.any(np.isnan(preds)) or np.any(np.isinf(preds)):
+            raise ValueError("Predictions contain NaN or infinite values")
+            
+        if np.all(preds <= 0):
+            raise ValueError("All predictions are non-positive")
+        
+        # Convert to float64 for numerical stability
+        preds = np.asarray(preds, dtype=np.float64)
+        
+        # Apply temperature scaling
+        if temperature != 1.0:
+            preds = np.log(preds + 1e-8) / temperature
+            preds = np.exp(preds)
+        
+        # Apply top-k filtering
+        if top_k is not None:
+            # Keep only top-k predictions, set others to 0
+            top_k_indices = np.argpartition(preds, -top_k)[-top_k:]
+            filtered_preds = np.zeros_like(preds)
+            filtered_preds[top_k_indices] = preds[top_k_indices]
+            preds = filtered_preds
+        
+        # Apply nucleus (top-p) filtering
+        if top_p is not None:
+            # Sort predictions in descending order
+            sorted_indices = np.argsort(preds)[::-1]
+            sorted_preds = preds[sorted_indices]
+            
+            # Calculate cumulative probabilities
+            normalized_preds = sorted_preds / np.sum(sorted_preds)
+            cumsum_preds = np.cumsum(normalized_preds)
+            
+            # Find cutoff index where cumulative probability exceeds top_p
+            cutoff_idx = np.where(cumsum_preds >= top_p)[0]
+            if len(cutoff_idx) > 0:
+                cutoff_idx = cutoff_idx[0] + 1  # Include the token that crosses threshold
+            else:
+                cutoff_idx = len(sorted_preds)  # Keep all if none exceed threshold
+            
+            # Keep only tokens up to cutoff
+            filtered_preds = np.zeros_like(preds)
+            filtered_preds[sorted_indices[:cutoff_idx]] = preds[sorted_indices[:cutoff_idx]]
+            preds = filtered_preds
+        
+        # Normalize to get valid probability distribution
+        preds = preds / np.sum(preds)
+        
+        # Sample from the final distribution
+        try:
+            probas = np.random.multinomial(1, preds, 1)
+            return int(np.argmax(probas))
+        except ValueError as e:
+            # Fallback to argmax if multinomial sampling fails
+            self.logger.warning(f"Multinomial sampling failed, using argmax: {e}")
+            return int(np.argmax(preds))

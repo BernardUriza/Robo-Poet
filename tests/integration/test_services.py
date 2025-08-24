@@ -17,13 +17,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
 
 from application.services.training_service import TrainingService
 from application.services.generation_service import GenerationService
-from application.commands.training_commands import StartTrainingCommand, SaveModelCommand
+from application.commands.training_commands import StartTrainingCommand, SaveModelCommand, TrainModelCommand
 from domain.entities.text_corpus import TextCorpus
 from domain.entities.generation_model import GenerationModel
 from domain.value_objects.model_config import ModelConfig
 from domain.value_objects.generation_params import GenerationParams
-from domain.events.training_events import TrainingStartedEvent, TrainingCompletedEvent
-from domain.events.generation_events import TextGeneratedEvent
+from domain.events.training_events import TrainingStarted, TrainingCompleted
+from domain.events.generation_events import GenerationCompleted
 from core.exceptions import ModelError, CorpusError, TrainingError
 
 
@@ -85,12 +85,13 @@ class TestTrainingServiceIntegration:
         
         # Crear comando
         command = StartTrainingCommand(
-            corpus_path=sample_corpus_file,
+            model_name="test_model",
+            corpus_id="test_corpus",
             config=ModelConfig(
                 vocab_size=1000,
                 embedding_dim=64,
-                lstm_units=[128, 128],
-                dropout_rate=0.3,
+                lstm_units=128,
+                variational_dropout_rate=0.3,
                 sequence_length=50,
                 epochs=2
             )
@@ -165,7 +166,8 @@ class TestTrainingServiceIntegration:
         corpus_repo.get_by_path = AsyncMock(side_effect=CorpusError("Corpus error"))
         
         command = StartTrainingCommand(
-            corpus_path="/nonexistent/file.txt",
+            model_name="error_model",
+            corpus_id="nonexistent_corpus",
             config=ModelConfig()
         )
         
@@ -187,7 +189,8 @@ class TestTrainingServiceIntegration:
         event_repo.add = AsyncMock()
         
         command = StartTrainingCommand(
-            corpus_path=sample_corpus_file,
+            model_name="test_model",
+            corpus_id="test_corpus",
             config=ModelConfig(epochs=1)
         )
         
@@ -200,14 +203,18 @@ class TestTrainingServiceIntegration:
             with patch('tensorflow.keras.layers.Embedding'):
                 with patch('tensorflow.keras.layers.LSTM'):
                     with patch('tensorflow.keras.layers.Dense'):
-                        asyncio.run(training_service.start_training(command))
+                        training_service.train_model(TrainModelCommand(
+                        model_name=command.model_name,
+                        corpus_id=command.corpus_id,
+                        config=command.config
+                    ))
                         
                         # Verificar eventos publicados
                         calls = event_repo.add.call_args_list
                         event_types = [call[0][0].__class__.__name__ for call in calls]
                         
-                        assert 'TrainingStartedEvent' in event_types
-                        assert 'TrainingCompletedEvent' in event_types
+                        assert 'TrainingStarted' in event_types
+                        assert 'TrainingCompleted' in event_types
         
         Path(sample_corpus_file).unlink()
 
@@ -352,7 +359,7 @@ class TestGenerationServiceIntegration:
                 # Verificar evento publicado
                 event_repo.add.assert_called_once()
                 event_call = event_repo.add.call_args[0][0]
-                assert isinstance(event_call, TextGeneratedEvent)
+                assert isinstance(event_call, GenerationCompleted)
     
     def test_batch_generation(self, generation_service, mock_trained_model, mock_uow_generation):
         """Test generación en lote."""
@@ -425,7 +432,8 @@ class TestServiceLayerErrorHandling:
             f.flush()
             
             command = StartTrainingCommand(
-                corpus_path=f.name,
+                model_name="e2e_model",
+                corpus_id="e2e_corpus",
                 config=ModelConfig(epochs=1)
             )
             

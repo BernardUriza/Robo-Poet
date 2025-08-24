@@ -20,8 +20,8 @@ from utils.file_manager import FileManager
 from utils.input_validator import InputValidator
 from utils.display_utils import DisplayUtils
 from interface.generation_modes import GenerationModes
-from data_processor import TextGenerator
-from model import ModelManager
+from src.data_processor import TextGenerator
+from src.model import ModelManager
 
 
 class Phase2GenerationInterface:

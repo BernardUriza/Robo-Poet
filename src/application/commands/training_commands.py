@@ -109,3 +109,33 @@ class UpdateCorpusCommand:
             self.new_content, self.new_name, self.add_tags, self.remove_tags
         ]):
             raise ValueError("At least one field must be updated")
+
+
+@dataclass
+class StartTrainingCommand:
+    """Command to start model training."""
+    model_name: str
+    corpus_id: str
+    config: Optional[ModelConfig] = None
+    
+    def validate(self) -> None:
+        """Validate command parameters."""
+        if not self.model_name.strip():
+            raise ValueError("Model name cannot be empty")
+        if not self.corpus_id.strip():
+            raise ValueError("Corpus ID cannot be empty")
+
+
+@dataclass
+class SaveModelCommand:
+    """Command to save trained model."""
+    model_name: str
+    model_path: str
+    metadata: Optional[Dict[str, Any]] = None
+    
+    def validate(self) -> None:
+        """Validate command parameters."""
+        if not self.model_name.strip():
+            raise ValueError("Model name cannot be empty")
+        if not self.model_path.strip():
+            raise ValueError("Model path cannot be empty")

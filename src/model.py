@@ -7,9 +7,11 @@ with configurable hyperparameters and GPU optimization support.
 
 import tensorflow as tf
 from tensorflow.keras import layers, Model
+from tensorflow.keras.saving import register_keras_serializable
 from typing import Tuple, Optional
 import numpy as np
 
+@register_keras_serializable(package='robo_poet', name='DropConnect')
 class DropConnect(layers.Layer):
     """
     DropConnect layer implementation - Strategy 2.1
@@ -21,14 +23,15 @@ class DropConnect(layers.Layer):
     def __init__(self, rate: float, **kwargs):
         super().__init__(**kwargs)
         self.rate = rate
+        self.supports_masking = True
         
-    def call(self, inputs, training=None):
+    def call(self, inputs, training=None, mask=None):
         if training:
             # Generate random mask for connections
-            mask = tf.random.uniform(tf.shape(inputs)) > self.rate
-            mask = tf.cast(mask, inputs.dtype)
+            dropout_mask = tf.random.uniform(tf.shape(inputs)) > self.rate
+            dropout_mask = tf.cast(dropout_mask, inputs.dtype)
             # Scale output to maintain expected value
-            return inputs * mask / (1.0 - self.rate)
+            return inputs * dropout_mask / (1.0 - self.rate)
         return inputs
     
     def get_config(self):
@@ -36,6 +39,7 @@ class DropConnect(layers.Layer):
         config.update({'rate': self.rate})
         return config
 
+@register_keras_serializable(package='robo_poet', name='VariationalDropout')
 class VariationalDropout(layers.Layer):
     """
     Variational Dropout implementation - Strategy 2.2
@@ -47,15 +51,16 @@ class VariationalDropout(layers.Layer):
     def __init__(self, rate: float, **kwargs):
         super().__init__(**kwargs)
         self.rate = rate
+        self.supports_masking = True
         
-    def call(self, inputs, training=None):
+    def call(self, inputs, training=None, mask=None):
         if training:
             # Generate mask for batch and feature dimensions only
             # Keep same mask across time dimension
             noise_shape = [tf.shape(inputs)[0], 1, tf.shape(inputs)[2]]
-            mask = tf.random.uniform(noise_shape) > self.rate
-            mask = tf.cast(mask, inputs.dtype)
-            return inputs * mask / (1.0 - self.rate)
+            dropout_mask = tf.random.uniform(noise_shape) > self.rate
+            dropout_mask = tf.cast(dropout_mask, inputs.dtype)
+            return inputs * dropout_mask / (1.0 - self.rate)
         return inputs
     
     def get_config(self):
@@ -142,19 +147,19 @@ class LSTMTextGenerator:
         # Strategy 2.1: DropConnect for inter-layer connections
         dropconnect_1 = DropConnect(self.dropconnect_rate, name='dropconnect_1')(dropout_1)
         
-        # LSTM Layer 2 - 256 units with return_sequences=True  
+        # LSTM Layer 2 - 256 units with return_sequences=False for next-token prediction
         lstm_2_out = layers.LSTM(
             units=256,  # Maintain 256 units per spec
-            return_sequences=True,  # For sequential generation
+            return_sequences=False,  # Changed: Only output last timestep for next-token prediction
             dropout=0.0,  # Disabled - using DropConnect instead
             recurrent_dropout=0.0,  # Disabled - using VariationalDropout instead
             name='lstm_layer_2'
         )(dropconnect_1)
         
-        # Strategy 2.2: Variational Dropout after LSTM 2
-        dropout_2 = VariationalDropout(self.variational_dropout_rate, name='variational_dropout_2')(lstm_2_out)
+        # Standard dropout for 2D output (since return_sequences=False)
+        dropout_2 = layers.Dropout(self.variational_dropout_rate, name='dropout_2')(lstm_2_out)
         
-        # Strategy 2.1: DropConnect before output layer
+        # Strategy 2.1: DropConnect before output layer (now works with 2D)
         dropconnect_2 = DropConnect(self.dropconnect_rate, name='dropconnect_2')(dropout_2)
         
         # Strategy 2.3: Weight tying - output layer uses transposed embedding weights
@@ -179,7 +184,7 @@ class LSTMTextGenerator:
         # Compile model
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-            loss='categorical_crossentropy',
+            loss='sparse_categorical_crossentropy',  # Changed: Use sparse for integer targets
             metrics=['accuracy']
         )
         
@@ -423,7 +428,7 @@ class ModelManager:
     @staticmethod
     def load_model(filepath: str) -> Model:
         """
-        Load model from disk.
+        Load model from disk with custom layers.
         
         Args:
             filepath: Path to saved model
@@ -432,7 +437,14 @@ class ModelManager:
             Loaded Keras model
         """
         try:
-            model = tf.keras.models.load_model(filepath)
+            # Define custom objects for loading
+            custom_objects = {
+                'VariationalDropout': VariationalDropout,
+                'DropConnect': DropConnect
+            }
+            
+            # Load model with custom objects
+            model = tf.keras.models.load_model(filepath, custom_objects=custom_objects)
             print(f"📁 Model loaded from: {filepath}")
             return model
         except Exception as e:

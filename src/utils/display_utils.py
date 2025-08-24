@@ -145,9 +145,18 @@ class DisplayUtils:
     
     @staticmethod
     def clear_screen() -> None:
-        """Clear screen for clean academic interface."""
-        import os
-        os.system('clear' if os.name == 'posix' else 'cls')
+        """Clear screen for clean academic interface (secure implementation)."""
+        import subprocess
+        import sys
+        
+        try:
+            if sys.platform.startswith('win'):
+                subprocess.run(['cls'], shell=False, check=False, capture_output=True, timeout=5)
+            else:
+                subprocess.run(['clear'], shell=False, check=False, capture_output=True, timeout=5)
+        except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
+            # Fallback to ANSI escape sequences if system commands fail
+            print('\\033[2J\\033[H', end='')
     
     @staticmethod
     def format_timestamp() -> str:

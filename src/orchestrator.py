@@ -15,6 +15,7 @@ import sys
 import argparse
 from pathlib import Path
 from typing import Optional
+import numpy as np
 
 # Import core modules safely
 import os
@@ -239,16 +240,24 @@ class RoboPoetOrchestrator:
             # Prepare data
             processor = TextProcessor(
                 sequence_length=self.config.model.sequence_length,
-                step_size=self.config.training.step_size
+                step_size=3  # Fixed step size for sliding window
             )
-            X, y = processor.prepare_data(text_file)
+            
+            # Load and prepare text
+            text = processor.load_text(text_file)
+            processor.build_vocabulary(text)
+            X_onehot, y_onehot = processor.create_sequences(text)
+            
+            # Convert one-hot to integer encoding for embedding layer
+            X = np.argmax(X_onehot, axis=-1)  # Shape: (samples, sequence_length)
+            y = np.argmax(y_onehot, axis=-1)  # Shape: (samples,)
             
             # Build model
             model_builder = LSTMTextGenerator(
                 vocab_size=processor.vocab_size,
                 sequence_length=self.config.model.sequence_length,
-                lstm_units=self.config.model.lstm_units,
-                dropout_rate=self.config.model.dropout_rate
+                lstm_units=self.config.model.lstm_units[0] if isinstance(self.config.model.lstm_units, list) else self.config.model.lstm_units,
+                variational_dropout_rate=self.config.model.dropout_rate
             )
             model = model_builder.build_model()
             
@@ -263,9 +272,9 @@ class RoboPoetOrchestrator:
             
             history = trainer.train(
                 X, y,
-                batch_size=self.config.training.batch_size,
+                batch_size=self.config.model.batch_size,
                 epochs=epochs,
-                validation_split=self.config.training.validation_split
+                validation_split=self.config.data.validation_split
             )
             
             # Save model and metadata
@@ -287,9 +296,11 @@ class RoboPoetOrchestrator:
                 'sequence_length': self.config.model.sequence_length,
                 'lstm_units': self.config.model.lstm_units,
                 'dropout_rate': self.config.model.dropout_rate,
-                'batch_size': self.config.training.batch_size,
-                'char_to_idx': processor.char_to_idx,
-                'idx_to_char': processor.idx_to_char,
+                'batch_size': self.config.model.batch_size,
+                'char_to_idx': processor.token_to_idx,  # Legacy name kept for compatibility
+                'idx_to_char': processor.idx_to_token,  # Legacy name kept for compatibility
+                'token_to_idx': processor.token_to_idx,
+                'idx_to_token': processor.idx_to_token,
                 'training_start_time': datetime.now().isoformat(),
                 'training_end_time': datetime.now().isoformat(),
                 'gpu_used': self.gpu_available
@@ -338,15 +349,16 @@ class RoboPoetOrchestrator:
             if metadata_path.exists():
                 with open(metadata_path) as f:
                     metadata = json.load(f)
-                char_to_idx = metadata.get('char_to_idx', {})
-                raw_idx_to_char = metadata.get('idx_to_char', {})
+                # Support both old and new naming conventions
+                char_to_idx = metadata.get('token_to_idx', metadata.get('char_to_idx', {}))
+                raw_idx_to_char = metadata.get('idx_to_token', metadata.get('idx_to_char', {}))
                 idx_to_char = {int(k): v for k, v in raw_idx_to_char.items()}
             else:
                 self.display.show_error("Metadata no encontrada - no se puede generar texto")
                 return 1
             
             # Generate text
-            generator = TextGenerator(model, char_to_idx, idx_to_char)
+            generator = TextGenerator(model, char_to_idx, idx_to_char, tokenization='word')
             result = generator.generate(seed, length, temperature)
             
             # Display result

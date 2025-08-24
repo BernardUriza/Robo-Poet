@@ -245,16 +245,49 @@ def get_database_url_with_password() -> str:
 
 
 def get_secure_secret_key() -> str:
-    """Get secure secret key for the application."""
+    """Get secure secret key for the application with enhanced validation."""
+    import re
+    import secrets
+    
     secret_key = get_secret('SECRET_KEY')
     if not secret_key:
         secret_key = os.getenv('SECURITY_SECRET_KEY', 'dev-secret-key-change-in-production')
     
-    # Validate key strength in production
-    if os.getenv('ENVIRONMENT') == 'production':
-        if secret_key == 'dev-secret-key-change-in-production':
-            raise ValueError("Must set a secure SECRET_KEY in production")
+    environment = os.getenv('ENVIRONMENT', 'development').lower()
+    
+    # Enhanced validation for all environments
+    if secret_key == 'dev-secret-key-change-in-production':
+        if environment == 'production':
+            raise ValueError(
+                "CRITICAL SECURITY ERROR: Default secret key detected in production. "
+                "Set a secure SECRET_KEY environment variable immediately."
+            )
+        elif environment in ['staging', 'testing']:
+            raise ValueError(
+                f"Default secret key not allowed in {environment} environment. "
+                "Set a secure SECRET_KEY environment variable."
+            )
+    
+    # Validate key strength for non-development environments
+    if environment != 'development':
         if len(secret_key) < 32:
-            raise ValueError("SECRET_KEY must be at least 32 characters in production")
+            raise ValueError(f"SECRET_KEY must be at least 32 characters in {environment} environment")
+        
+        # Check for complexity (should have mix of characters)
+        if not re.search(r'[A-Z]', secret_key):
+            raise ValueError("SECRET_KEY should contain uppercase letters")
+        if not re.search(r'[a-z]', secret_key):
+            raise ValueError("SECRET_KEY should contain lowercase letters") 
+        if not re.search(r'[0-9]', secret_key):
+            raise ValueError("SECRET_KEY should contain digits")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', secret_key):
+            raise ValueError("SECRET_KEY should contain special characters")
+    
+    # Additional security: warn if key appears to be weak
+    if len(set(secret_key)) < len(secret_key) * 0.5:  # Less than 50% unique characters
+        import logging
+        logging.getLogger(__name__).warning(
+            "SECRET_KEY has low character diversity. Consider generating a new key."
+        )
     
     return secret_key
