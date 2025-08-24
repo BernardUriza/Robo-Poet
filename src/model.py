@@ -310,8 +310,12 @@ class ModelTrainer:
         print(f"   Batch size: {batch_size}, Epochs: {epochs}")
         print(f"   Validation split: {validation_split:.1%}")
         
-        # Setup callbacks
-        callbacks = self._setup_callbacks(patience=10)
+        # Setup callbacks with patience based on total epochs
+        # For long training (50+ epochs), use higher patience
+        early_patience = max(15, epochs // 6) if epochs >= 50 else 10
+        print(f"⚙️ Early stopping patience: {early_patience} epochs")
+        print(f"⚙️ LR reduction patience: {max(8, early_patience//2)} epochs")
+        callbacks = self._setup_callbacks(patience=early_patience)
         
         # Train on specified device
         with tf.device(self.device):
@@ -354,7 +358,7 @@ class ModelTrainer:
             tf.keras.callbacks.ReduceLROnPlateau(
                 monitor='val_loss',
                 factor=0.5,
-                patience=patience//2,
+                patience=max(8, patience//2),  # At least 8 epochs patience
                 min_lr=1e-6,
                 verbose=1
             ),
