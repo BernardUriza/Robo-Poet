@@ -117,8 +117,17 @@ class Phase1TrainingInterface:
         print()
         
         try:
-            # Import and use the multi-corpus processor
-            from data.pytorch_multicorpus_processor import process_corpus_automatically
+            # Import and use the multi-corpus processor using direct import
+            import sys
+            import importlib.util
+            from pathlib import Path
+            
+            # Direct import of the module
+            processor_path = Path(__file__).parent.parent / "data" / "pytorch_multicorpus_processor.py"
+            spec = importlib.util.spec_from_file_location("pytorch_multicorpus_processor", processor_path)
+            processor_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(processor_module)
+            process_corpus_automatically = processor_module.process_corpus_automatically
             
             # Process entire corpus folder automatically
             print("📁 Procesando carpeta corpus completa...")

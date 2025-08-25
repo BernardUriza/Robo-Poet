@@ -351,8 +351,8 @@ def main():
         data_dir=config['data_dir'],
         batch_size=config['batch_size'],
         context_length=config['context_length'],
-        num_workers=config['num_workers'],
-        device=device
+        num_workers=0,  # Disable multiprocessing to avoid CUDA fork issues
+        device=None  # Keep tensors on CPU, move to GPU in training loop
     )
     
     # Get vocabulary size from dataset
