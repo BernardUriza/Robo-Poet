@@ -21,7 +21,10 @@ from utils.input_validator import InputValidator
 from utils.display_utils import DisplayUtils
 from interface.generation_modes import GenerationModes
 from src.data_processor import TextGenerator
-from src.model import ModelManager
+try:
+    from model_pytorch import RoboPoetModel as ModelManager
+except ImportError:
+    ModelManager = None
 
 
 class Phase2GenerationInterface:

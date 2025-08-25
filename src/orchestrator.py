@@ -34,15 +34,24 @@ if conda_prefix != '/usr/local':
     os.environ['CUDA_HOME'] = conda_prefix
     os.environ['LD_LIBRARY_PATH'] = f'{conda_prefix}/lib:{conda_prefix}/lib64:{os.environ.get("LD_LIBRARY_PATH", "")}'
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+    # PyTorch environment optimizations
 
-# Suppress TensorFlow warnings
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Suppress INFO and WARNING messages
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Disable oneDNN for consistent results
+# Configure PyTorch environment
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
 
 # Import with fallbacks
 gpu_available = False
-tf_module = None
+torch_module = None
+
+# Try to import PyTorch
+try:
+    import torch
+    torch_module = torch
+    gpu_available = torch.cuda.is_available()
+    if gpu_available:
+        print(f"🔥 PyTorch GPU available: {torch.cuda.get_device_name(0)}")
+except ImportError:
+    print("⚠️ PyTorch no disponible - modo CPU solamente")
 
 try:
     from core.unified_config import get_config
@@ -56,16 +65,17 @@ except ImportError:
             system=SimpleNamespace(debug=True)
         )
 
-# GPU detection with graceful fallback
+# GPU detection with PyTorch
 try:
-    import tensorflow as tf
-    # Try direct GPU test for WSL2 compatibility  
-    with tf.device('/GPU:0'):
-        test_tensor = tf.constant([1.0, 2.0, 3.0])
-        result = tf.reduce_sum(test_tensor)
-    gpu_available = True
-    tf_module = tf
-    print("🎯 GPU funcionando correctamente")
+    if torch_module and torch_module.cuda.is_available():
+        gpu_available = True
+        print(f"🎯 PyTorch GPU funcionando correctamente: {torch_module.cuda.get_device_name(0)}")
+    else:
+        gpu_available = False
+        if torch_module:
+            print("⚠️ PyTorch disponible pero GPU no detectada")
+        else:
+            print("⚠️ PyTorch no disponible")
 except Exception as e:
     print(f"⚠️ GPU no disponible, continuando sin GPU: {e}")
     gpu_available = False
@@ -107,6 +117,18 @@ except ImportError as e:
     print(f"⚠️ Input validator not available: {e}")
     InputValidator = None
 
+# Import PyTorch model components
+try:
+    from model_pytorch import create_model, RoboPoetModel
+    MODEL_TYPE = "PyTorch GPT"
+    print("🚀 Using PyTorch GPT model (modern transformer architecture)")
+except ImportError as e:
+    print(f"❌ PyTorch model not available: {e}")
+    print("   Please ensure PyTorch is installed and robo-poet-pytorch directory exists")
+    create_model = None
+    RoboPoetModel = None
+    MODEL_TYPE = "PyTorch GPT (Not Available)"
+
 
 class RoboPoetOrchestrator:
     """Main orchestrator for the Robo-Poet Academic Framework."""
@@ -114,6 +136,18 @@ class RoboPoetOrchestrator:
     def __init__(self):
         """Initialize orchestrator with all components."""
         self.config = get_config()
+        
+        # Show current model type
+        print(f"🤖 Model System: {MODEL_TYPE}")
+        
+        # Academic Performance GPU Requirement
+        if torch_module and not torch_module.cuda.is_available():
+            print("🎓 ACADEMIC PERFORMANCE WARNING:")
+            print("   📚 GPU/CUDA not available - academic benchmarks require GPU")
+            print("   🔧 Install CUDA-enabled PyTorch for optimal performance")
+        elif torch_module and torch_module.cuda.is_available():
+            print(f"🔥 Academic Performance Mode: GPU Available")
+            print(f"   🎮 GPU: {torch_module.cuda.get_device_name(0)}")
         
         # Initialize components with fallbacks
         self.menu_system = AcademicMenuSystem() if AcademicMenuSystem else None
@@ -124,7 +158,7 @@ class RoboPoetOrchestrator:
         
         # GPU availability
         self.gpu_available = gpu_available
-        self.tf_module = tf_module
+        self.torch_module = torch_module
     
     def _safe_display(self, method_name, *args, **kwargs):
         """Safely call display methods with fallback."""
@@ -267,7 +301,6 @@ class RoboPoetOrchestrator:
             # Import training modules
             from data_processor import TextProcessor
             from model import LSTMTextGenerator, ModelTrainer, ModelManager
-            import tensorflow as tf
             import json
             from datetime import datetime
             

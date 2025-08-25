@@ -1,0 +1,77 @@
+# RoboPoet PyTorch GPT Configuration
+# Small model optimized for Shakespeare + Alice corpus
+# Target: <10M parameters, val_loss <5.0
+
+model:
+  # Architecture
+  n_layer: 6          # Number of transformer layers
+  n_head: 8           # Number of attention heads
+  n_embd: 256         # Embedding dimensions
+  vocab_size: 6725    # Vocabulary size (auto-detected from dataset)
+  block_size: 128     # Maximum context length
+  
+  # Regularization
+  dropout: 0.1        # Dropout probability
+  bias: true          # Use bias in linear layers
+
+training:
+  # Optimization
+  learning_rate: 6e-4 # Peak learning rate
+  min_lr: 1e-6        # Minimum learning rate (cosine decay)
+  weight_decay: 0.01  # AdamW weight decay
+  betas: [0.9, 0.95]  # Adam beta parameters
+  
+  # Training loop
+  epochs: 50          # Maximum epochs
+  batch_size: 32      # Batch size
+  gradient_accumulation_steps: 1  # Effective batch size = batch_size * accum_steps
+  max_grad_norm: 1.0  # Gradient clipping
+  
+  # Precision and memory
+  mixed_precision: true     # Use autocast + GradScaler
+  compile_model: false      # Use torch.compile (PyTorch 2.0+)
+  
+  # Logging and checkpointing
+  log_interval: 50    # Log every N steps
+  save_every: 5       # Save checkpoint every N epochs
+  patience: 10        # Early stopping patience
+  
+  # Hardware
+  num_workers: 4      # DataLoader workers
+  pin_memory: true    # Pin memory for faster GPU transfer
+
+data:
+  # Paths
+  data_dir: "data/processed"
+  checkpoint_dir: "checkpoints"
+  log_dir: "logs"
+  
+  # Dataset
+  context_length: 128 # Must match model.block_size
+  stride_train: 64    # Training stride (50% overlap)
+  stride_val: 128     # Validation stride (no overlap)
+
+generation:
+  # Default generation parameters
+  max_tokens: 200     # Maximum tokens to generate
+  temperature: 0.8    # Sampling temperature
+  top_k: 40           # Top-k filtering
+  top_p: 0.95         # Nucleus sampling
+  repetition_penalty: 1.1  # Repetition penalty
+
+# Target performance metrics
+targets:
+  val_loss: 5.0       # Target validation loss (beat TF LSTM 6.5)
+  train_speed: 1000   # Tokens/sec on RTX 2000 Ada
+  memory_usage: 6     # Max GPU memory (GB)
+  generation_length: 200  # Coherent generation length
+
+# Hardware requirements - ACADEMIC PERFORMANCE: GPU MANDATORY
+hardware:
+  gpu: "NVIDIA RTX 2000 Ada (REQUIRED)"
+  gpu_mandatory: true  # Academic performance requirement
+  vram: "8GB (minimum)"
+  cuda: "11.8+ (REQUIRED)"
+  pytorch: "2.1.0+cu118 (CUDA version required)"
+  academic_compliance: "GPU mandatory for performance benchmarks"
+  performance_justification: ">10x faster training, mixed precision, large batches"

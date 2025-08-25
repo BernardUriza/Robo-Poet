@@ -173,8 +173,6 @@ class Module2TestSuite:
                     self.logger.info(f"✅ Modelo entrenado exitosamente: {self.temp_model_path}")
                     
                     # Verificar que el modelo es válido
-                    import tensorflow as tf
-                    model = tf.keras.models.load_model(self.temp_model_path)
                     param_count = model.count_params()
                     
                     test_result = {

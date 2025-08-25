@@ -109,8 +109,46 @@ class Phase1TrainingInterface:
         return self._execute_training(text_file, epochs, model_name)
     
     def _get_training_text(self) -> Optional[str]:
-        """Get and validate training text file."""
-        print("\n📚 SELECCIÓN DE CORPUS DE ENTRENAMIENTO")
+        """Process entire corpus automatically for PyTorch training."""
+        print("\n🚀 PROCESAMIENTO AUTOMÁTICO DE MULTI-CORPUS PYTORCH")
+        print("=" * 60)
+        print("📚 Procesando TODOS los archivos del corpus automáticamente...")
+        print("🔄 No se requiere selección manual - sistema académico optimizado")
+        print()
+        
+        try:
+            # Import and use the multi-corpus processor
+            from data.pytorch_multicorpus_processor import process_corpus_automatically
+            
+            # Process entire corpus folder automatically
+            print("📁 Procesando carpeta corpus completa...")
+            metadata = process_corpus_automatically(
+                corpus_dir="corpus",
+                output_dir="data/processed"
+            )
+            
+            print(f"\n✅ PROCESAMIENTO MULTI-CORPUS COMPLETADO")
+            print(f"   📊 Archivos procesados: {metadata['files_processed']}")
+            print(f"   📄 Archivos: {', '.join(metadata['file_names'])}")
+            print(f"   📏 Total caracteres: {metadata['total_characters']:,}")
+            print(f"   🔤 Vocabulario: {metadata['vocabulary_size']} tokens")
+            print(f"   📊 Splits: Train/Val/Test creados automáticamente")
+            
+            # Return the unified corpus path for training
+            unified_corpus_path = "data/processed/unified_corpus.txt"
+            print(f"\n🎯 Corpus unificado listo para entrenamiento PyTorch:")
+            print(f"   📁 {unified_corpus_path}")
+            
+            return unified_corpus_path
+            
+        except Exception as e:
+            self.display.show_error(f"Error en procesamiento automático: {e}")
+            print("\n⚠️ Fallback: Intentando procesamiento manual...")
+            return self._get_training_text_fallback()
+    
+    def _get_training_text_fallback(self) -> Optional[str]:
+        """Fallback method for manual corpus selection if automatic processing fails."""
+        print("\n📚 SELECCIÓN MANUAL DE CORPUS (FALLBACK)")
         print("=" * 50)
         
         # Show available text files
@@ -228,13 +266,21 @@ class Phase1TrainingInterface:
         print()
         
         try:
-            # Prepare training command with model name
+            # Use PyTorch training system instead of old TensorFlow
+            print("🚀 Iniciando entrenamiento PyTorch GPT (Academic Performance Mode)")
+            print(f"   🎓 GPU mandatory for academic standards")
+            print(f"   🔥 Using: NVIDIA RTX 2000 Ada")
+            print()
+            
+            # Prepare PyTorch training command
+            pytorch_main = "robo-poet-pytorch/main.py"
             cmd = [
                 sys.executable, 
-                'robo_poet.py', 
-                '--text', text_file, 
+                pytorch_main,
+                'train',
                 '--epochs', str(epochs),
-                '--model', model_name
+                '--batch_size', '32',
+                '--context_length', '128'
             ]
             
             # Configure environment for subprocess

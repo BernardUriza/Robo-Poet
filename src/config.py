@@ -12,7 +12,6 @@ from typing import Tuple, Optional
 # XLA configuration is now handled by the main script
 
 # NOW import TensorFlow with proper configuration
-import tensorflow as tf
 
 @dataclass
 class ModelConfig:
@@ -68,14 +67,11 @@ class GPUConfigurator:
             bool: True if GPU available and configured, False if not available
         """
         # First try standard detection
-        gpus = tf.config.experimental.list_physical_devices('GPU')
         
         if not gpus:
             # Standard detection failed, try direct GPU operation (WSL2 fix)
             print("🔍 Detección estándar GPU falló, probando acceso directo...")
             try:
-                with tf.device('/GPU:0'):
-                    test_tensor = tf.constant([1.0])
                 print("✅ GPU accesible directamente, configurando para uso forzado...")
                 # GPU works, proceed with configuration assuming GPU:0 exists
                 gpus = ['/GPU:0']  # Fake GPU entry for configuration
@@ -88,14 +84,11 @@ class GPUConfigurator:
             real_gpus = [gpu for gpu in gpus if hasattr(gpu, 'name')]
             if real_gpus:
                 for gpu in real_gpus:
-                    tf.config.experimental.set_memory_growth(gpu, True)
                 print(f"✅ GPU ACADÉMICA CONFIGURADA: {real_gpus[0].name}")
             else:
                 print("✅ GPU ACADÉMICA CONFIGURADA: /GPU:0 (acceso directo)")
             
             # Use float32 for stability (avoiding XLA issues)
-            policy = tf.keras.mixed_precision.Policy('float32')
-            tf.keras.mixed_precision.set_global_policy(policy)
             
             print(f"   Modo: Académico (GPU obligatoria)")
             print(f"   XLA JIT: Deshabilitado")
@@ -116,7 +109,6 @@ class GPUConfigurator:
         Returns:
             str: Always '/GPU:0' - terminates if GPU unavailable
         """
-        gpus = tf.config.experimental.list_physical_devices('GPU')
         
         if not gpus:
             # Verificar que CUDA_VISIBLE_DEVICES no esté vacío
@@ -136,9 +128,6 @@ class GPUConfigurator:
             
             # Intentar detección WSL2 solo si GPU podría estar disponible
             try:
-                with tf.device('/GPU:0'):
-                    test = tf.constant([1.0])
-                    _ = tf.reduce_sum(test)
                 print("✅ GPU detectada via workaround WSL2")
                 return '/GPU:0'
             except Exception as e:
@@ -150,7 +139,6 @@ class GPUConfigurator:
                 print("\nSoluciones:")
                 print("1. Verificar driver NVIDIA: nvidia-smi")
                 print("2. Activar entorno conda: conda activate robo-poet-gpu")
-                print("3. Verificar CUDA: python -c 'import tensorflow as tf; print(tf.config.list_physical_devices(\"GPU\"))'")
                 print("\nSi estás en WSL2, asegúrate de:")
                 print("- Tener Windows 11 o Windows 10 build 21H2+")
                 print("- Driver NVIDIA actualizado en Windows (no en WSL2)")

@@ -197,8 +197,6 @@ class CLIApplicationService:
     def _check_gpu_availability(self) -> bool:
         """Check if GPU is available."""
         try:
-            import tensorflow as tf
-            return len(tf.config.list_physical_devices('GPU')) > 0
         except ImportError:
             return False
         except Exception:

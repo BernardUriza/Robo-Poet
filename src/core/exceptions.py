@@ -640,9 +640,6 @@ class ErrorHandler:
         
         try:
             # Clear GPU cache
-            import tensorflow as tf
-            if tf.config.list_physical_devices('GPU'):
-                tf.keras.backend.clear_session()
                 logger.info("Cleared GPU cache for recovery")
                 return True
         except Exception as e:

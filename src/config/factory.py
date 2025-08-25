@@ -191,28 +191,22 @@ class GPUFactory:
     def configure_gpu(settings: Settings) -> bool:
         """Configure GPU settings for TensorFlow."""
         try:
-            import tensorflow as tf
             
             # Set visible devices
             os.environ['CUDA_VISIBLE_DEVICES'] = settings.gpu.visible_devices
             
             # Configure GPU memory growth
-            gpus = tf.config.experimental.list_physical_devices('GPU')
             if gpus:
                 for gpu in gpus:
-                    tf.config.experimental.set_memory_growth(gpu, settings.gpu.memory_growth)
                 
                 # Set memory limit if specified
                 if settings.gpu.max_memory_mb:
-                    tf.config.experimental.set_memory_limit(
                         gpus[0], 
                         settings.gpu.max_memory_mb
                     )
                 
                 # Configure mixed precision
                 if settings.gpu.mixed_precision:
-                    policy = tf.keras.mixed_precision.Policy('mixed_float16')
-                    tf.keras.mixed_precision.set_global_policy(policy)
                 
                 logger.info(f"GPU configured: {len(gpus)} device(s) available")
                 return True

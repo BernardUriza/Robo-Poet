@@ -475,7 +475,6 @@ class TextGenerator:
     
     def __init__(
         self, 
-        model: Any,  # tf.keras.Model but avoiding import here
         token_to_idx: Dict[str, TokenIndex], 
         idx_to_token: Dict[TokenIndex, str], 
         tokenization: TokenizationMode = 'word'
