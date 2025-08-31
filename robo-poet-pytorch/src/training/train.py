@@ -215,13 +215,14 @@ class GPTTrainer:
         }
         
         filepath = self.checkpoint_dir / filename
-        torch.save(checkpoint, filepath)
         
         if is_best:
             best_path = self.checkpoint_dir / 'best.pth'
             torch.save(checkpoint, best_path)
             print(f"💾 Best checkpoint saved: {best_path}")
         
+        # Always save to epoch checkpoint (separate from best)
+        torch.save(checkpoint, filepath)
         print(f"💾 Checkpoint saved: {filepath}")
     
     def load_checkpoint(self, filepath: str):
@@ -376,8 +377,8 @@ def main():
         val_loader=val_loader,
         config=config,
         device=device,
-        checkpoint_dir='../../checkpoints',
-        log_dir='../../logs'
+        checkpoint_dir='checkpoints',
+        log_dir='logs'
     )
     
     # Resume from checkpoint if specified

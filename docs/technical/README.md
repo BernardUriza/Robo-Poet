@@ -73,7 +73,7 @@ flowchart TD
 ```bash
 # Activar entorno conda
 eval "$($HOME/miniconda3/bin/conda shell.bash hook)"       
-conda activate robo-poet-gpu
+conda activate robo-poet-pytorchrobo-poet-gpu
 
 # MÉTODO PRINCIPAL: Interfaz Académica (RECOMENDADO)
 python robo_poet.py

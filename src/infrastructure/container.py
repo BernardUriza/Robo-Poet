@@ -17,6 +17,8 @@ from src.infrastructure.persistence.repositories.corpus_repository import SQLAlc
 from src.infrastructure.persistence.repositories.model_repository import SQLAlchemyModelRepository
 from src.infrastructure.persistence.repositories.event_repository import SQLAlchemyEventRepository
 from src.application.services import TrainingService, GenerationService
+from src.application.services.telares.telares_service import TelaresDetectionService
+from src.application.services.telares.training_service import TelaresTrainingService
 from src.application.queries.query_handlers import TrainingQueryHandler
 from src.application.event_handlers.training_event_handlers import TrainingEventHandler, GenerationEventHandler
 from src.application.message_bus import MessageBus, create_message_bus
@@ -79,6 +81,15 @@ class Container(containers.DeclarativeContainer):
     generation_service = providers.Factory(
         GenerationService,
         uow=unit_of_work_factory
+    )
+    
+    # Telares Services
+    telares_detection_service = providers.Factory(
+        TelaresDetectionService
+    )
+    
+    telares_training_service = providers.Factory(
+        TelaresTrainingService
     )
     
     # Query Handlers
@@ -166,6 +177,14 @@ class ServiceLocator:
     def get_generation_service(self) -> GenerationService:
         """Get generation service instance."""
         return self.container.generation_service()
+    
+    def get_telares_detection_service(self) -> TelaresDetectionService:
+        """Get telares detection service instance."""
+        return self.container.telares_detection_service()
+    
+    def get_telares_training_service(self) -> TelaresTrainingService:
+        """Get telares training service instance."""
+        return self.container.telares_training_service()
     
     def get_query_handler(self) -> TrainingQueryHandler:
         """Get query handler instance."""

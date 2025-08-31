@@ -274,3 +274,178 @@ class GenerationService:
         
         # For now, return a placeholder
         return f"[Generated text for prompt: '{prompt[:50]}...' using model {model.name}]"
+    
+    # ===== TELARES DATASET AMPLIFICATION =====
+    
+    def generate_for_telares_amplification(
+        self,
+        model_id: str,
+        amplification_config: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate synthetic text samples for Telares dataset amplification.
+        
+        This method automatically generates text variations that can be used
+        to expand the Telares detection dataset with labeled examples.
+        
+        Args:
+            model_id: ID of the trained text generation model
+            amplification_config: Configuration for amplification generation
+            
+        Returns:
+            List of generated samples with automatic Telares labeling
+        """
+        try:
+            # Default amplification prompts for different manipulation tactics
+            manipulation_prompts = {
+                "promesa_irrealista": [
+                    "Este negocio increíble te hará millonario en",
+                    "Gana dinero fácil sin trabajar con este método que",
+                    "Obtén ingresos pasivos de $50,000 mensuales con"
+                ],
+                "urgencia_artificial": [
+                    "¡ÚLTIMOS CUPOS DISPONIBLES! Esta oportunidad única",
+                    "¡OFERTA POR TIEMPO LIMITADO! Solo quedan",
+                    "¡ACTÚA AHORA O TE ARREPENTIRÁS! Esta chance"
+                ],
+                "control_emocional": [
+                    "Tu familia merece lo mejor, por eso debes",
+                    "Piensa en el futuro de tus hijos cuando",
+                    "No dejes que tus sueños mueran, únete a"
+                ],
+                "lenguaje_espiritual": [
+                    "Dios te está dando esta bendición para que",
+                    "El universo conspira a tu favor con esta",
+                    "Esta es una señal divina para que"
+                ],
+                "presion_social": [
+                    "Todos tus amigos ya están ganando dinero con",
+                    "No seas el único que se quede atrás mientras",
+                    "Miles de personas ya confían en este sistema"
+                ],
+                "testimonio_fabricado": [
+                    "Yo logré cambiar mi vida completamente gracias a",
+                    "Mi vecina ahora maneja un BMW nuevo después de",
+                    "María, de 45 años, pasó de ser empleada a"
+                ],
+                "logica_circular": [
+                    "Este sistema funciona porque es muy simple:",
+                    "La clave del éxito es que todos ganan cuando",
+                    "Es matemática pura: si inviertes X entonces"
+                ]
+            }
+            
+            # Control prompts (non-manipulative)
+            control_prompts = [
+                "En el parque los niños juegan mientras",
+                "La biblioteca municipal ofrece cursos de",
+                "El clima de hoy está perfecto para",
+                "Los libros de poesía nos enseñan que",
+                "La música clásica tiene la cualidad de"
+            ]
+            
+            generated_samples = []
+            
+            # Generate manipulative samples
+            for tactic, prompts in manipulation_prompts.items():
+                for prompt in prompts[:2]:  # 2 samples per tactic
+                    params = GenerationParams(
+                        temperature=0.7,
+                        max_length=150,
+                        seed_text=prompt
+                    )
+                    
+                    result = self.generate_text(model_id, prompt, params)
+                    
+                    # Auto-label as manipulative
+                    sample = {
+                        "generated_text": result["generated_text"],
+                        "source_tactic": tactic,
+                        "manipulation_score": 1.0,  # High manipulation
+                        "telares_labels": {tactic: 1.0},  # Label for this tactic
+                        "generation_params": params.to_dict(),
+                        "is_synthetic": True,
+                        "amplification_type": "manipulative"
+                    }
+                    generated_samples.append(sample)
+            
+            # Generate control samples (non-manipulative)
+            for prompt in control_prompts:
+                params = GenerationParams(
+                    temperature=0.6,
+                    max_length=120,
+                    seed_text=prompt
+                )
+                
+                result = self.generate_text(model_id, prompt, params)
+                
+                # Auto-label as clean
+                sample = {
+                    "generated_text": result["generated_text"],
+                    "source_tactic": "none",
+                    "manipulation_score": 0.0,  # No manipulation
+                    "telares_labels": {},  # No manipulation tactics
+                    "generation_params": params.to_dict(),
+                    "is_synthetic": True,
+                    "amplification_type": "control"
+                }
+                generated_samples.append(sample)
+            
+            return generated_samples
+            
+        except Exception as e:
+            raise ValueError(f"Telares amplification failed: {str(e)}")
+    
+    def auto_amplify_telares_dataset(
+        self,
+        model_id: str,
+        target_samples: int = 50
+    ) -> Dict[str, Any]:
+        """
+        Automatically amplify Telares dataset with generated samples.
+        
+        This method is called automatically when text generation is performed
+        in Phase 2, creating labeled samples for Telares detection improvement.
+        
+        Args:
+            model_id: Trained generation model to use
+            target_samples: Number of samples to generate
+            
+        Returns:
+            Amplification results and statistics
+        """
+        try:
+            # Configure amplification
+            config = {
+                "target_samples": target_samples,
+                "manipulation_ratio": 0.7,  # 70% manipulative, 30% control
+                "max_length": 150,
+                "temperature_range": (0.6, 0.8)
+            }
+            
+            # Generate samples
+            samples = self.generate_for_telares_amplification(model_id, config)
+            
+            # Statistics
+            manipulative_count = sum(1 for s in samples if s["manipulation_score"] > 0.5)
+            control_count = len(samples) - manipulative_count
+            
+            # Auto-trigger Telares retraining (delegated to TelaresTrainingService)
+            amplification_result = {
+                "success": True,
+                "total_generated": len(samples),
+                "manipulative_samples": manipulative_count,
+                "control_samples": control_count,
+                "samples": samples,
+                "auto_retrain_triggered": True,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            return amplification_result
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }

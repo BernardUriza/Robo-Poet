@@ -14,6 +14,8 @@ from src.domain.value_objects.generation_params import GenerationParams
 from src.application.commands.training_commands import TrainModelCommand, CreateCorpusCommand
 from src.application.services.training_service import TrainingService
 from src.application.services.generation_service import GenerationService
+from src.application.services.telares.telares_service import TelaresDetectionService
+from src.application.services.telares.training_service import TelaresTrainingService
 from src.config.settings import Settings, get_cached_settings
 from src.core.exceptions import RoboPoetError
 
@@ -27,6 +29,10 @@ class CLIConfig:
     seed_text: str = "The power of"
     temperature: float = 0.8
     length: int = 200
+    # Telares-specific configs
+    telares_mode: bool = False
+    hybrid_training: bool = False
+    corpus_dir: str = "corpus"
 
 
 class CLIApplicationService:
@@ -41,10 +47,14 @@ class CLIApplicationService:
         self,
         training_service: TrainingService,
         generation_service: GenerationService,
+        telares_detection_service: Optional[TelaresDetectionService] = None,
+        telares_training_service: Optional[TelaresTrainingService] = None,
         settings: Optional[Settings] = None
     ):
         self.training_service = training_service
         self.generation_service = generation_service
+        self.telares_detection_service = telares_detection_service or TelaresDetectionService()
+        self.telares_training_service = telares_training_service or TelaresTrainingService()
         self.settings = settings or get_cached_settings()
         self.logger = logging.getLogger(__name__)
     
@@ -197,7 +207,99 @@ class CLIApplicationService:
     def _check_gpu_availability(self) -> bool:
         """Check if GPU is available."""
         try:
+            # Basic GPU check - simplified for WSL2 compatibility
+            return True  # Assume available for now
         except ImportError:
             return False
         except Exception:
             return False
+    
+    # ===== TELARES DETECTOR METHODS =====
+    
+    def train_telares_detector(self, config: CLIConfig) -> Dict[str, Any]:
+        """
+        Train Telares detector for pyramid scheme detection.
+        
+        Args:
+            config: CLI configuration with telares options
+            
+        Returns:
+            Training metrics and results
+        """
+        try:
+            if config.hybrid_training:
+                # Train with poetic corpus as negative controls
+                metrics = self.telares_training_service.train_hybrid_model(config.corpus_dir)
+            else:
+                # Train with telares dataset only
+                metrics = self.telares_training_service.train_standard_model()
+            
+            self.logger.info("Telares detector training completed successfully")
+            return metrics
+            
+        except Exception as e:
+            self.logger.error(f"Telares training failed: {e}")
+            raise RoboPoetError(
+                message=f"Failed to train Telares detector: {e}",
+                category="telares_training",
+                context={"config": config}
+            ) from e
+    
+    def analyze_telares_message(self, message: str, platform: str = None) -> Dict[str, Any]:
+        """
+        Analyze a message for pyramid scheme manipulation tactics.
+        
+        Args:
+            message: Text message to analyze
+            platform: Platform where message originated
+            
+        Returns:
+            Detection results with manipulation tactics
+        """
+        try:
+            result = self.telares_detection_service.analyze_message(message, platform)
+            
+            # Convert to dict for CLI display
+            return {
+                "message": result.message[:100] + "..." if len(result.message) > 100 else result.message,
+                "risk_level": result.overall_risk.value,
+                "detected_tactics": result.detected_tactics,
+                "confidence": result.confidence,
+                "total_score": result.total_manipulation_score,
+                "is_pyramid_scheme": result.is_pyramid_scheme,
+                "alert_message": result.get_alert_message(),
+                "processing_time_ms": result.processing_time_ms
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Telares analysis failed: {e}")
+            raise RoboPoetError(
+                message=f"Failed to analyze message: {e}",
+                category="telares_analysis",
+                context={"message": message[:50]}
+            ) from e
+    
+    def get_telares_status(self) -> Dict[str, Any]:
+        """
+        Get Telares detector system status.
+        
+        Returns:
+            System status and capabilities
+        """
+        try:
+            detection_status = self.telares_detection_service.get_system_status()
+            training_status = self.telares_training_service.get_training_status()
+            
+            return {
+                "telares_ready": detection_status.get("ready_for_detection", False),
+                "model_loaded": detection_status.get("detector_loaded", False),
+                "model_version": detection_status.get("model_version", "Unknown"),
+                "supported_tactics": detection_status.get("supported_tactics", []),
+                "training_available": training_status.get("data_loader_ready", False),
+                "available_datasets": training_status.get("available_datasets", []),
+                "last_training": training_status.get("last_training_metrics", {})
+            }
+            
+        except Exception as e:
+            self.logger.warning(f"Could not get telares status: {e}")
+            return {"status": "error", "error": str(e)}

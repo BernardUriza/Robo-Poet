@@ -36,10 +36,12 @@ class CLIController:
         self.container = Container()
         self.logger = logging.getLogger(__name__)
         
-        # Initialize application service
+        # Initialize application service with Telares integration
         self.cli_service = CLIApplicationService(
             training_service=self.container.training_service(),
             generation_service=self.container.generation_service(),
+            telares_detection_service=self.container.telares_detection_service(),
+            telares_training_service=self.container.telares_training_service(),
             settings=self.settings
         )
     

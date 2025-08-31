@@ -83,7 +83,7 @@ class ShakespeareDataset(Dataset):
     def _create_vocabulary_from_text(self) -> None:
         """Create character vocabulary from text if not exists."""
         # Load text first
-        text_path = self.data_dir / "unified_corpus.txt"
+        text_path = self.data_dir / "processed" / "simple_corpus.txt"
         if not text_path.exists():
             raise FileNotFoundError(f"Cannot create vocabulary: {text_path} not found")
         
@@ -127,11 +127,11 @@ class ShakespeareDataset(Dataset):
         """Load text data for specified split."""
         if self.split == "train":
             # Use unified corpus for training
-            text_path = self.data_dir / "unified_corpus.txt"
+            text_path = self.data_dir / "processed" / "simple_corpus.txt"
             if text_path.exists():
                 with open(text_path, 'r', encoding='utf-8') as f:
                     self.text = f.read()
-                print(f"📖 Loaded unified corpus: {len(self.text):,} chars")
+                print(f"📖 Loaded simple corpus: {len(self.text):,} chars")
             else:
                 # Fallback to splits
                 text_path = self.data_dir / "splits" / "train.txt"
