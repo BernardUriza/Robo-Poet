@@ -17,7 +17,7 @@ def main():
     """Punto de entrada principal para tests del Módulo 2."""
     
     parser = argparse.ArgumentParser(
-        description="🧪 Suite de Tests - Módulo 2: Deep Gradient Flow Analysis",
+        description=" Suite de Tests - Módulo 2: Deep Gradient Flow Analysis",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos de uso:
@@ -53,11 +53,11 @@ Ejemplos de uso:
     try:
         from testing.module2_test_suite import run_selected_tests, run_quick_demo, run_full_validation
     except ImportError as e:
-        print(f"❌ Error importando suite de tests: {e}")
+        print(f"[X] Error importando suite de tests: {e}")
         print("Asegúrate de ejecutar desde el directorio raíz del proyecto")
         return 1
     
-    print("🧪 INICIANDO TESTS MÓDULO 2")
+    print(" INICIANDO TESTS MÓDULO 2")
     print("=" * 60)
     
     # Execute based on selected mode
@@ -65,15 +65,15 @@ Ejemplos de uso:
     
     try:
         if args.quick:
-            print("🚀 Ejecutando DEMO RÁPIDO...")
+            print("[LAUNCH] Ejecutando DEMO RÁPIDO...")
             results = run_quick_demo()
             
         elif args.full:
-            print("🔬 Ejecutando VALIDACIÓN COMPLETA...")
+            print("[SCIENCE] Ejecutando VALIDACIÓN COMPLETA...")
             results = run_full_validation()
             
         elif args.tests:
-            print(f"🎯 Ejecutando TESTS ESPECÍFICOS: {args.tests}")
+            print(f"[TARGET] Ejecutando TESTS ESPECÍFICOS: {args.tests}")
             results = run_selected_tests(args.tests)
             
         elif args.block:
@@ -85,7 +85,7 @@ Ejemplos de uso:
             }
             
             selected_tests = test_blocks[args.block]
-            print(f"📊 Ejecutando BLOQUE {args.block.upper()}: {selected_tests}")
+            print(f"[CHART] Ejecutando BLOQUE {args.block.upper()}: {selected_tests}")
             results = run_selected_tests(selected_tests)
         
         # Show results
@@ -94,20 +94,20 @@ Ejemplos de uso:
             show_final_results(results, args.verbose)
             
             if results.get('success'):
-                print("🎉 TODOS LOS TESTS EXITOSOS")
+                print(" TODOS LOS TESTS EXITOSOS")
                 return 0
             else:
-                print("❌ ALGUNOS TESTS FALLARON")
+                print("[X] ALGUNOS TESTS FALLARON")
                 return 1
         else:
-            print("❌ No se obtuvieron resultados de los tests")
+            print("[X] No se obtuvieron resultados de los tests")
             return 1
             
     except KeyboardInterrupt:
-        print("\n\n🛑 Tests interrumpidos por usuario")
+        print("\n\n Tests interrumpidos por usuario")
         return 0
     except Exception as e:
-        print(f"\n❌ Error ejecutando tests: {e}")
+        print(f"\n[X] Error ejecutando tests: {e}")
         if args.verbose:
             import traceback
             traceback.print_exc()
@@ -120,54 +120,54 @@ def show_final_results(results, verbose=False):
     metadata = results.get('test_suite_metadata', {})
     individual_results = results.get('individual_test_results', {})
     
-    print("📊 RESUMEN DE RESULTADOS:")
+    print("[CHART] RESUMEN DE RESULTADOS:")
     print("-" * 40)
-    print(f"✅ Tests exitosos: {stats.get('successful_tests', 0)}")
-    print(f"❌ Tests fallidos: {stats.get('failed_tests', 0)}")
-    print(f"📈 Tasa de éxito: {stats.get('success_rate', 0):.1%}")
-    print(f"⏱️ Tiempo total: {stats.get('total_execution_time', 0):.2f} segundos")
+    print(f"[OK] Tests exitosos: {stats.get('successful_tests', 0)}")
+    print(f"[X] Tests fallidos: {stats.get('failed_tests', 0)}")
+    print(f"[GROWTH] Tasa de éxito: {stats.get('success_rate', 0):.1%}")
+    print(f"[TIME] Tiempo total: {stats.get('total_execution_time', 0):.2f} segundos")
     
     if verbose:
-        print(f"\n📋 DETALLES POR TEST:")
+        print(f"\n DETALLES POR TEST:")
         print("-" * 40)
         
         for test_name, result in individual_results.items():
-            status_emoji = "✅" if result.get('status') == 'SUCCESS' else "❌"
+            status_emoji = "[OK]" if result.get('status') == 'SUCCESS' else "[X]"
             test_display = test_name.replace('_', ' ').title()
             
             print(f"{status_emoji} {test_display}")
             
             if result.get('status') == 'SUCCESS':
                 if 'total_time' in result:
-                    print(f"   ⏱️ Tiempo: {result['total_time']:.2f}s")
+                    print(f"   [TIME] Tiempo: {result['total_time']:.2f}s")
                     
                 # Mostrar detalles específicos por tipo de test
                 if test_name == 'training':
                     if 'parameters' in result:
-                        print(f"   🧠 Parámetros: {result['parameters']:,}")
+                        print(f"   [BRAIN] Parámetros: {result['parameters']:,}")
                 elif test_name == 'gradient_analysis':
-                    print(f"   📉 Vanishing: {'Sí' if result.get('has_vanishing') else 'No'}")
-                    print(f"   📈 Exploding: {'Sí' if result.get('has_exploding') else 'No'}")
+                    print(f"    Vanishing: {'Sí' if result.get('has_vanishing') else 'No'}")
+                    print(f"   [GROWTH] Exploding: {'Sí' if result.get('has_exploding') else 'No'}")
                 elif test_name == 'minima_analysis':
-                    print(f"   🏔️ Categoría: {result.get('sharpness_category', 'N/A')}")
+                    print(f"    Categoría: {result.get('sharpness_category', 'N/A')}")
                 elif test_name == 'emergency_surgery':
                     success = 'Exitosa' if result.get('surgery_successful') else 'Fallida'
-                    print(f"   🏥 Cirugía: {success}")
+                    print(f"    Cirugía: {success}")
             else:
-                print(f"   ❌ Error: {result.get('error', 'Error desconocido')}")
+                print(f"   [X] Error: {result.get('error', 'Error desconocido')}")
             
             print()
     
     # Archivos generados
     log_file = metadata.get('log_file')
     if log_file:
-        print(f"📁 ARCHIVOS GENERADOS:")
-        print(f"   📝 Log detallado: {log_file}")
-        print(f"   📊 Reportes en directorio actual")
+        print(f" ARCHIVOS GENERADOS:")
+        print(f"   [DOC] Log detallado: {log_file}")
+        print(f"   [CHART] Reportes en directorio actual")
         
         if verbose:
-            print(f"   🎯 Modelo usado: {metadata.get('model_used', 'N/A')}")
-            print(f"   🕒 Timestamp: {metadata.get('timestamp', 'N/A')}")
+            print(f"   [TARGET] Modelo usado: {metadata.get('model_used', 'N/A')}")
+            print(f"    Timestamp: {metadata.get('timestamp', 'N/A')}")
 
 if __name__ == "__main__":
     sys.exit(main())

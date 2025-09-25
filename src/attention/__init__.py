@@ -9,9 +9,9 @@ for educational purposes and detailed gradient analysis.
 # Make attention classes available at module level
 try:
     from .scaled_dot_product_attention import ScaledDotProductAttention, create_attention_model, test_attention_layer
-    print("✅ Scaled Dot-Product Attention module loaded")
+    print("[OK] Scaled Dot-Product Attention module loaded")
 except ImportError as e:
-    print(f"⚠️ Attention module import warning: {e}")
+    print(f"WARNING: Attention module import warning: {e}")
     # Define empty classes for graceful degradation
     class ScaledDotProductAttention:
         def __init__(self, *args, **kwargs):
@@ -21,7 +21,7 @@ except ImportError as e:
         raise ImportError("TensorFlow required for attention mechanisms")
     
     def test_attention_layer():
-        print("❌ TensorFlow not available - cannot test attention layer")
+        print("[X] TensorFlow not available - cannot test attention layer")
         return False
 
 __all__ = [

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Robo-Poet AI{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-900 text-white">
+    <nav class="bg-gray-800 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-robot text-2xl text-purple-500"></i>
+                <h1 class="text-2xl font-bold">Robo-Poet AI</h1>
+            </div>
+            <ul class="flex space-x-6">
+                <li><a href="{% url 'dashboard' %}" class="hover:text-purple-400">Dashboard</a></li>
+                <li><a href="{% url 'training' %}" class="hover:text-purple-400">Training</a></li>
+                <li><a href="{% url 'generation' %}" class="hover:text-purple-400">Generate</a></li>
+                <li><a href="{% url 'models' %}" class="hover:text-purple-400">Models</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 p-4 mt-12">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 Robo-Poet AI | GPU: {{ gpu_status|default:"Checking..." }}</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

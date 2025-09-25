@@ -89,10 +89,10 @@ class DetectionResult:
     def get_alert_message(self) -> str:
         """Generate alert message for suspicious content"""
         if not self.detected_tactics:
-            return "✅ Mensaje limpio - sin manipulación detectada"
+            return "[OK] Mensaje limpio - sin manipulación detectada"
         
         tactics_str = ", ".join(self.detected_tactics)
-        return f"🚨 ALERTA: Detectadas tácticas de manipulación: {tactics_str} (Riesgo: {self.overall_risk.value})"
+        return f" ALERTA: Detectadas tácticas de manipulación: {tactics_str} (Riesgo: {self.overall_risk.value})"
     
     def to_dict(self) -> Dict:
         """Convert to dictionary for serialization"""

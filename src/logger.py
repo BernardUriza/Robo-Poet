@@ -113,7 +113,7 @@ def log_gpu_info(gpu_config: dict) -> None:
         gpu_config: Configuración GPU del gpu_manager
     """
     gpu_logger.info("=" * 50)
-    gpu_logger.info("🎯 CONFIGURACIÓN GPU COMPLETADA")
+    gpu_logger.info("[TARGET] CONFIGURACIÓN GPU COMPLETADA")
     gpu_logger.info("=" * 50)
     gpu_logger.info(f"GPU: {gpu_config.get('gpu_name', 'Desconocida')}")
     
@@ -137,7 +137,7 @@ def log_model_architecture(model_summary: str, param_count: int) -> None:
         model_summary: Resumen del modelo de Keras
         param_count: Número de parámetros
     """
-    model_logger.info("🧠 ARQUITECTURA DEL MODELO")
+    model_logger.info("[BRAIN] ARQUITECTURA DEL MODELO")
     model_logger.info("=" * 40)
     model_logger.info(f"Parámetros totales: {param_count:,}")
     model_logger.debug("Arquitectura completa:")
@@ -159,7 +159,7 @@ def log_training_progress(epoch: int, total_epochs: int, loss: float,
         accuracy: Accuracy (opcional)
     """
     progress = f"[{epoch:3d}/{total_epochs:3d}]"
-    msg = f"🚀 Entrenamiento {progress} - Loss: {loss:.4f}"
+    msg = f"[LAUNCH] Entrenamiento {progress} - Loss: {loss:.4f}"
     
     if val_loss is not None:
         msg += f" - Val Loss: {val_loss:.4f}"
@@ -181,7 +181,7 @@ def log_generation_result(seed_text: str, generated_text: str,
         temperature: Temperature usada
         length: Longitud generada
     """
-    generation_logger.info("🎨 GENERACIÓN COMPLETADA")
+    generation_logger.info("[ART] GENERACIÓN COMPLETADA")
     generation_logger.info(f"Seed: '{seed_text[:30]}{'...' if len(seed_text) > 30 else ''}'")
     generation_logger.info(f"Temperature: {temperature} | Longitud: {length}")
     generation_logger.debug(f"Texto generado: {generated_text[:100]}...")
@@ -195,7 +195,7 @@ def log_error(error: Exception, context: str = "") -> None:
         error: Excepción ocurrida
         context: Contexto adicional del error
     """
-    error_msg = f"❌ ERROR: {type(error).__name__}: {str(error)}"
+    error_msg = f"[X] ERROR: {type(error).__name__}: {str(error)}"
     if context:
         error_msg += f" | Contexto: {context}"
     
@@ -212,7 +212,7 @@ def log_phase_start(phase: str, description: str) -> None:
         description: Descripción de la fase
     """
     main_logger.info("=" * 60)
-    main_logger.info(f"🚀 INICIANDO {phase.upper()}")
+    main_logger.info(f"[LAUNCH] INICIANDO {phase.upper()}")
     main_logger.info(f"Descripción: {description}")
     main_logger.info("=" * 60)
 
@@ -229,7 +229,7 @@ def log_phase_complete(phase: str, duration_seconds: float) -> None:
     seconds = int(duration_seconds % 60)
     
     main_logger.info("=" * 60)
-    main_logger.info(f"✅ {phase.upper()} COMPLETADA")
+    main_logger.info(f"[OK] {phase.upper()} COMPLETADA")
     main_logger.info(f"Duración: {minutes}m {seconds}s")
     main_logger.info("=" * 60)
 
@@ -239,7 +239,7 @@ def log_system_info() -> None:
     import platform
     import os
     
-    main_logger.info("🎓 ROBO-POET v2.1 - Sistema de Generación de Texto Académico")
+    main_logger.info("[GRAD] ROBO-POET v2.1 - Sistema de Generación de Texto Académico")
     main_logger.info("=" * 60)
     main_logger.info(f"Sistema: {platform.system()} {platform.release()}")
     main_logger.info(f"Python: {platform.python_version()}")
@@ -266,32 +266,32 @@ def setup_logging(level: int = logging.INFO) -> None:
     
     # Log inicial del sistema
     log_system_info()
-    main_logger.info("📝 Sistema de logging iniciado correctamente")
+    main_logger.info("[DOC] Sistema de logging iniciado correctamente")
 
 
 if __name__ == "__main__":
     """Test del sistema de logging."""
-    print("🧪 PROBANDO SISTEMA DE LOGGING")
+    print(" PROBANDO SISTEMA DE LOGGING")
     print("="*40)
     
     # Setup inicial
     setup_logging()
     
     # Test de diferentes niveles
-    main_logger.debug("🔍 Mensaje de debug")
-    main_logger.info("ℹ️ Mensaje informativo")
-    main_logger.warning("⚠️ Mensaje de advertencia")
-    main_logger.error("❌ Mensaje de error")
+    main_logger.debug("[SEARCH] Mensaje de debug")
+    main_logger.info("ℹ Mensaje informativo")
+    main_logger.warning("WARNING: Mensaje de advertencia")
+    main_logger.error("[X] Mensaje de error")
     
     # Test de funciones especializadas
     log_phase_start("Prueba", "Testing del sistema de logging")
     
     # Test de diferentes loggers
-    gpu_logger.info("✅ GPU configurada correctamente")
-    model_logger.info("🧠 Modelo construido: 1,234,567 parámetros")
-    training_logger.info("🚀 Entrenamiento [001/050] - Loss: 2.1234")
-    generation_logger.info("🎨 Texto generado exitosamente")
+    gpu_logger.info("[OK] GPU configurada correctamente")
+    model_logger.info("[BRAIN] Modelo construido: 1,234,567 parámetros")
+    training_logger.info("[LAUNCH] Entrenamiento [001/050] - Loss: 2.1234")
+    generation_logger.info("[ART] Texto generado exitosamente")
     
     log_phase_complete("Prueba", 42.5)
     
-    print(f"\n📁 Logs guardados en: logs/robo_poet_{datetime.now():%Y%m%d}.log")
+    print(f"\n Logs guardados en: logs/robo_poet_{datetime.now():%Y%m%d}.log")

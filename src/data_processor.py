@@ -158,22 +158,22 @@ class TextProcessor:
         unified_corpus_path = Path("data/processed/unified_corpus.txt")
         
         if prefer_unified and unified_corpus_path.exists():
-            print(f"🎯 USING UNIFIED PREPROCESSED CORPUS")
+            print(f"[TARGET] USING UNIFIED PREPROCESSED CORPUS")
             print(f"   File: {unified_corpus_path}")
             
             try:
                 with open(unified_corpus_path, 'r', encoding='utf-8') as f:
                     unified_text = f.read()[:max_length]
                 
-                print(f"   ✅ Unified corpus loaded: {len(unified_text):,} characters")
-                print(f"   🎭 Contains document markers for style control")
-                print(f"   📊 Preprocessed vocabulary and normalization")
+                print(f"   [OK] Unified corpus loaded: {len(unified_text):,} characters")
+                print(f"   [DRAMA] Contains document markers for style control")
+                print(f"   [CHART] Preprocessed vocabulary and normalization")
                 
                 return unified_text
                 
             except Exception as e:
-                print(f"   ⚠️ Error loading unified corpus: {e}")
-                print(f"   📝 Falling back to multi-file corpus...")
+                print(f"   WARNING: Error loading unified corpus: {e}")
+                print(f"   [DOC] Falling back to multi-file corpus...")
         
         # Fallback to original multi-file approach
         corpus_path = Path(corpus_path)  # Convert to Path for consistency
@@ -190,10 +190,10 @@ class TextProcessor:
         if not txt_files:
             raise FileNotFoundError(f"No .txt files found in corpus directory: {corpus_path}")
         
-        print(f"📚 MULTI-CORPUS LOADING SYSTEM (FALLBACK)")
+        print(f"[BOOKS] MULTI-CORPUS LOADING SYSTEM (FALLBACK)")
         print(f"   Directory: {corpus_path}")
         print(f"   Found {len(txt_files)} text files:")
-        print(f"   💡 Tip: Ejecuta preprocesamiento para mejor convergencia")
+        print(f"   [IDEA] Tip: Ejecuta preprocesamiento para mejor convergencia")
         
         combined_text = ""
         total_chars_loaded = 0
@@ -206,10 +206,10 @@ class TextProcessor:
             for txt_file in txt_files:
                 # Check if we've reached the character limit
                 if total_chars_loaded >= max_length:
-                    print(f"   ⚠️ Reached max_length limit ({max_length:,} chars), stopping...")
+                    print(f"   WARNING: Reached max_length limit ({max_length:,} chars), stopping...")
                     break
                 
-                print(f"   📖 Loading: {txt_file.name}...", end=" ")
+                print(f"    Loading: {txt_file.name}...", end=" ")
                 
                 try:
                     with open(txt_file, 'r', encoding='utf-8') as f:
@@ -230,22 +230,22 @@ class TextProcessor:
                     total_chars_loaded += file_chars
                     files_loaded += 1
                     
-                    print(f"✅ {file_chars:,} chars")
+                    print(f"[OK] {file_chars:,} chars")
                     
                 except UnicodeDecodeError as e:
-                    print(f"❌ Encoding error: {e}")
+                    print(f"[X] Encoding error: {e}")
                     continue
                 except Exception as e:
-                    print(f"❌ Error: {e}")
+                    print(f"[X] Error: {e}")
                     continue
             
             if not combined_text:
                 raise FileNotFoundError("No valid text content could be loaded from corpus files")
             
-            print(f"\n📊 MULTI-CORPUS SUMMARY:")
-            print(f"   ✅ Files successfully loaded: {files_loaded}/{len(txt_files)}")
-            print(f"   📝 Total characters: {len(combined_text):,}")
-            print(f"   🎯 Combined corpus ready for training")
+            print(f"\n[CHART] MULTI-CORPUS SUMMARY:")
+            print(f"   [OK] Files successfully loaded: {files_loaded}/{len(txt_files)}")
+            print(f"   [DOC] Total characters: {len(combined_text):,}")
+            print(f"   [TARGET] Combined corpus ready for training")
             
             return combined_text
             
@@ -321,7 +321,7 @@ class TextProcessor:
             self.token_to_idx = {token: idx for idx, token in enumerate(vocab_tokens)}
             self.idx_to_token = {idx: token for idx, token in enumerate(vocab_tokens)}
             
-            print(f"📊 Word-level vocabulary built: {self.vocab_size:,} unique tokens")
+            print(f"[CHART] Word-level vocabulary built: {self.vocab_size:,} unique tokens")
             print(f"   Most frequent: {[word for word, _ in sorted_words[:10]]}")
             print(f"   Special tokens: {self.special_tokens}")
             print(f"   Out-of-vocab words will map to: <UNK>")
@@ -335,7 +335,7 @@ class TextProcessor:
             self.token_to_idx = {char: idx for idx, char in enumerate(chars)}
             self.idx_to_token = {idx: char for idx, char in enumerate(chars)}
             
-            print(f"📊 Character-level vocabulary built: {self.vocab_size} unique characters")
+            print(f"[CHART] Character-level vocabulary built: {self.vocab_size} unique characters")
             sample_chars = list(chars)[:10]
             print(f"   Sample chars: {sample_chars}")
     
@@ -372,7 +372,7 @@ class TextProcessor:
                 sequences.append(sequence)
                 next_tokens.append(next_token)
             
-            print(f"🔨 Generated {len(sequences):,} word-level training sequences")
+            print(f" Generated {len(sequences):,} word-level training sequences")
             
             # Convert to one-hot encoded arrays
             X = np.zeros((len(sequences), self.sequence_length, self.vocab_size), dtype=np.bool_)
@@ -401,7 +401,7 @@ class TextProcessor:
                 sentences.append(text[i:i + self.sequence_length])
                 next_chars.append(text[i + self.sequence_length])
             
-            print(f"🔨 Generated {len(sentences):,} character-level training sequences")
+            print(f" Generated {len(sentences):,} character-level training sequences")
             
             # Convert to one-hot encoded arrays
             X = np.zeros((len(sentences), self.sequence_length, self.vocab_size), dtype=np.bool_)
@@ -412,7 +412,7 @@ class TextProcessor:
                     X[i, t, self.token_to_idx[char]] = 1
                 y[i, self.token_to_idx[next_chars[i]]] = 1
         
-        print(f"📈 Arrays created: X{X.shape}, y{y.shape}")
+        print(f"[GROWTH] Arrays created: X{X.shape}, y{y.shape}")
         print(f"   Memory usage: {(X.nbytes + y.nbytes) / 1024**2:.1f} MB")
         
         return X, y
@@ -428,7 +428,7 @@ class TextProcessor:
         Returns:
             Tuple of prepared (X, y) arrays for training from combined corpus
         """
-        print("📚 MULTI-CORPUS DATA PREPARATION PIPELINE")
+        print("[BOOKS] MULTI-CORPUS DATA PREPARATION PIPELINE")
         print("=" * 60)
         
         # Load and combine all corpus texts

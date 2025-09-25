@@ -36,17 +36,17 @@ class Phase1TrainingInterface:
     
     def _get_model_name(self) -> Optional[str]:
         """Get and validate model name from user (mandatory)."""
-        print("\n🎯 NOMBRE DEL MODELO (OBLIGATORIO)")
+        print("\n[TARGET] NOMBRE DEL MODELO (OBLIGATORIO)")
         print("=" * 50)
-        print("📌 Cada modelo debe tener un nombre único para identificarlo")
-        print("💡 Ejemplos: 'shakespeare_v1', 'poeta_español', 'novela_fantasia'")
-        print("⚠️  El nombre no puede dejarse vacío")
+        print(" Cada modelo debe tener un nombre único para identificarlo")
+        print("[IDEA] Ejemplos: 'shakespeare_v1', 'poeta_español', 'novela_fantasia'")
+        print("WARNING:  El nombre no puede dejarse vacío")
         
         while True:
-            model_name = input("\n✏️  Ingresa el nombre del modelo: ").strip()
+            model_name = input("\n  Ingresa el nombre del modelo: ").strip()
             
             if not model_name:
-                self.display.show_error("❌ El nombre del modelo es OBLIGATORIO")
+                self.display.show_error("[X] El nombre del modelo es OBLIGATORIO")
                 print("   Por favor, ingresa un nombre válido para continuar")
                 continue
             
@@ -54,7 +54,7 @@ class Phase1TrainingInterface:
             import re
             if not re.match(r'^[a-zA-Z0-9_-]+$', model_name):
                 self.display.show_error(
-                    "❌ El nombre solo puede contener letras, números, guiones y underscores"
+                    "[X] El nombre solo puede contener letras, números, guiones y underscores"
                 )
                 continue
             
@@ -64,7 +64,7 @@ class Phase1TrainingInterface:
                 existing_model = models_dir / f"{model_name}.keras"
                 if existing_model.exists():
                     self.display.show_warning(
-                        f"⚠️  Ya existe un modelo llamado '{model_name}'"
+                        f"WARNING:  Ya existe un modelo llamado '{model_name}'"
                     )
                     overwrite = self.validator.get_confirmation(
                         "¿Deseas sobrescribir el modelo existente?",
@@ -73,16 +73,16 @@ class Phase1TrainingInterface:
                     if not overwrite:
                         continue
             
-            print(f"✅ Nombre del modelo: '{model_name}'")
+            print(f"[OK] Nombre del modelo: '{model_name}'")
             return model_name
     
     def run_intensive_training(self) -> bool:
         """Execute Phase 1 intensive training workflow."""
         self.display.clear_screen()
-        print("🔥" * 20 + " FASE 1: ENTRENAMIENTO INTENSIVO " + "🔥" * 20)
+        print("[FIRE]" * 20 + " FASE 1: ENTRENAMIENTO INTENSIVO " + "[FIRE]" * 20)
         print("=" * 80)
-        print("🎓 PROCESO ACADÉMICO DE ENTRENAMIENTO NEURONAL")
-        print("⚡ Optimizado para GPU NVIDIA RTX 2000 Ada")
+        print("[GRAD] PROCESO ACADÉMICO DE ENTRENAMIENTO NEURONAL")
+        print("[FAST] Optimizado para GPU NVIDIA RTX 2000 Ada")
         print("⏰ Duración estimada: 1-3 horas (dependiendo de épocas)")
         print("=" * 80)
         
@@ -110,10 +110,10 @@ class Phase1TrainingInterface:
     
     def _get_training_text(self) -> Optional[str]:
         """Process entire corpus automatically for PyTorch training."""
-        print("\n🚀 PROCESAMIENTO AUTOMÁTICO DE MULTI-CORPUS PYTORCH")
+        print("\n[LAUNCH] PROCESAMIENTO AUTOMÁTICO DE MULTI-CORPUS PYTORCH")
         print("=" * 60)
-        print("📚 Procesando TODOS los archivos del corpus automáticamente...")
-        print("🔄 No se requiere selección manual - sistema académico optimizado")
+        print("[BOOKS] Procesando TODOS los archivos del corpus automáticamente...")
+        print("[CYCLE] No se requiere selección manual - sistema académico optimizado")
         print()
         
         try:
@@ -130,54 +130,54 @@ class Phase1TrainingInterface:
             process_corpus_automatically = processor_module.process_corpus_automatically
             
             # Process entire corpus folder automatically
-            print("📁 Procesando carpeta corpus completa...")
+            print(" Procesando carpeta corpus completa...")
             metadata = process_corpus_automatically(
                 corpus_dir="corpus",
                 output_dir="data/processed"
             )
             
-            print(f"\n✅ PROCESAMIENTO MULTI-CORPUS COMPLETADO")
-            print(f"   📊 Archivos procesados: {metadata['files_processed']}")
-            print(f"   📄 Archivos: {', '.join(metadata['file_names'])}")
-            print(f"   📏 Total caracteres: {metadata['total_characters']:,}")
-            print(f"   🔤 Vocabulario: {metadata['vocabulary_size']} tokens")
-            print(f"   📊 Splits: Train/Val/Test creados automáticamente")
+            print(f"\n[OK] PROCESAMIENTO MULTI-CORPUS COMPLETADO")
+            print(f"   [CHART] Archivos procesados: {metadata['files_processed']}")
+            print(f"    Archivos: {', '.join(metadata['file_names'])}")
+            print(f"    Total caracteres: {metadata['total_characters']:,}")
+            print(f"    Vocabulario: {metadata['vocabulary_size']} tokens")
+            print(f"   [CHART] Splits: Train/Val/Test creados automáticamente")
             
             # Return the unified corpus path for training
             unified_corpus_path = "data/processed/unified_corpus.txt"
-            print(f"\n🎯 Corpus unificado listo para entrenamiento PyTorch:")
-            print(f"   📁 {unified_corpus_path}")
+            print(f"\n[TARGET] Corpus unificado listo para entrenamiento PyTorch:")
+            print(f"    {unified_corpus_path}")
             
             return unified_corpus_path
             
         except Exception as e:
             self.display.show_error(f"Error en procesamiento automático: {e}")
-            print("\n⚠️ Fallback: Intentando procesamiento manual...")
+            print("\nWARNING: Fallback: Intentando procesamiento manual...")
             return self._get_training_text_fallback()
     
     def _get_training_text_fallback(self) -> Optional[str]:
         """Fallback method for manual corpus selection if automatic processing fails."""
-        print("\n📚 SELECCIÓN MANUAL DE CORPUS (FALLBACK)")
+        print("\n[BOOKS] SELECCIÓN MANUAL DE CORPUS (FALLBACK)")
         print("=" * 50)
         
         # Show available text files
         text_files = self.file_manager.get_text_files()
         
         if text_files:
-            print("📁 Archivos de texto disponibles:")
+            print(" Archivos de texto disponibles:")
             for i, text_file in enumerate(text_files, 1):
                 file_size = Path(text_file).stat().st_size / 1024
                 print(f"   {i}. {text_file} ({file_size:.1f} KB)")
             print(f"   {len(text_files) + 1}. Especificar ruta manual")
         else:
-            print("⚠️ No se encontraron archivos de texto automáticamente")
-            print("💡 Puedes especificar la ruta manualmente")
+            print("WARNING: No se encontraron archivos de texto automáticamente")
+            print("[IDEA] Puedes especificar la ruta manualmente")
         
         # Get user choice
         while True:
             if text_files:
                 choice = self.validator.get_menu_choice(
-                    "\n🎯 Selecciona archivo de entrenamiento", 
+                    "\n[TARGET] Selecciona archivo de entrenamiento", 
                     len(text_files) + 1
                 )
                 
@@ -185,7 +185,7 @@ class Phase1TrainingInterface:
                     selected_file = text_files[choice - 1]
                     valid, message = self.file_manager.validate_text_file(selected_file)
                     if valid:
-                        print(f"✅ {message}")
+                        print(f"[OK] {message}")
                         return selected_file
                     else:
                         self.display.show_error(message)
@@ -195,22 +195,22 @@ class Phase1TrainingInterface:
             
             # Manual file path
             manual_path = self.validator.get_file_path_input(
-                "\n📝 Ingresa la ruta del archivo de texto"
+                "\n[DOC] Ingresa la ruta del archivo de texto"
             )
             if manual_path:
                 valid, message = self.file_manager.validate_text_file(manual_path)
                 if valid:
-                    print(f"✅ {message}")
+                    print(f"[OK] {message}")
                     return manual_path
                 else:
                     self.display.show_error(message)
             else:
-                print("❌ Entrenamiento cancelado")
+                print("[X] Entrenamiento cancelado")
                 return None
     
     def _get_epochs_configuration(self) -> int:
         """Get and validate epochs configuration."""
-        print("\n🎯 CONFIGURACIÓN DE ÉPOCAS DE ENTRENAMIENTO")
+        print("\n[TARGET] CONFIGURACIÓN DE ÉPOCAS DE ENTRENAMIENTO")
         print("=" * 50)
         
         self.display.show_academic_tip(
@@ -222,7 +222,7 @@ class Phase1TrainingInterface:
         
         while True:
             epochs = self.validator.get_number_input(
-                "🔢 Número de épocas", 
+                " Número de épocas", 
                 default=20, 
                 min_val=1, 
                 max_val=100
@@ -237,7 +237,7 @@ class Phase1TrainingInterface:
     
     def _confirm_training(self, text_file: str, epochs: int, model_name: str) -> bool:
         """Show training configuration and get final confirmation."""
-        print("\n⚠️ CONFIRMACIÓN FINAL DE ENTRENAMIENTO")
+        print("\nWARNING: CONFIRMACIÓN FINAL DE ENTRENAMIENTO")
         print("=" * 50)
         
         # Show configuration summary
@@ -245,13 +245,13 @@ class Phase1TrainingInterface:
         estimated_time_min = epochs * 3
         estimated_time_max = epochs * 8
         
-        print(f"🏷️  Modelo: {model_name}")
-        print(f"📚 Archivo: {text_file}")
-        print(f"📊 Tamaño: {file_size:.1f} KB")
-        print(f"🎯 Épocas: {epochs}")
+        print(f"  Modelo: {model_name}")
+        print(f"[BOOKS] Archivo: {text_file}")
+        print(f"[CHART] Tamaño: {file_size:.1f} KB")
+        print(f"[TARGET] Épocas: {epochs}")
         print(f"⏰ Tiempo estimado: {estimated_time_min}-{estimated_time_max} minutos")
-        print(f"🧠 LSTM units: {self.config.model.lstm_units}")
-        print(f"📦 Batch size: {self.config.model.batch_size}")
+        print(f"[BRAIN] LSTM units: {self.config.model.lstm_units}")
+        print(f"[PACKAGE] Batch size: {self.config.model.batch_size}")
         
         self.display.show_warning(
             "El entrenamiento usará GPU intensivamente y no debe interrumpirse.\n"
@@ -259,7 +259,7 @@ class Phase1TrainingInterface:
         )
         
         return self.validator.get_confirmation(
-            "\n🚀 ¿Iniciar entrenamiento intensivo?", 
+            "\n[LAUNCH] ¿Iniciar entrenamiento intensivo?", 
             default_yes=True
         )
     
@@ -267,18 +267,18 @@ class Phase1TrainingInterface:
         """Execute the actual training process."""
         self.display.show_training_header(text_file, epochs)
         
-        print(f"🏷️  Modelo: {model_name}")
-        print("🔧 Configurando entorno GPU...")
-        print("📚 Preparando datos...")
-        print("🧠 Construyendo modelo LSTM...")
-        print("⚡ Iniciando entrenamiento...")
+        print(f"  Modelo: {model_name}")
+        print("[FIX] Configurando entorno GPU...")
+        print("[BOOKS] Preparando datos...")
+        print("[BRAIN] Construyendo modelo LSTM...")
+        print("[FAST] Iniciando entrenamiento...")
         print()
         
         try:
             # Use PyTorch training system instead of old TensorFlow
-            print("🚀 Iniciando entrenamiento PyTorch GPT (Academic Performance Mode)")
-            print(f"   🎓 GPU mandatory for academic standards")
-            print(f"   🔥 Using: NVIDIA RTX 2000 Ada")
+            print("[LAUNCH] Iniciando entrenamiento PyTorch GPT (Academic Performance Mode)")
+            print(f"   [GRAD] GPU mandatory for academic standards")
+            print(f"   [FIRE] Using: NVIDIA RTX 2000 Ada")
             print()
             
             # Prepare PyTorch training command
@@ -307,9 +307,9 @@ class Phase1TrainingInterface:
                 env['CUDA_VISIBLE_DEVICES'] = '0'
                 env['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
             
-            print("🚀 Ejecutando entrenamiento intensivo...")
-            print("💡 Monitoreo disponible: nvidia-smi (en otra terminal)")
-            print("📊 Logs: TensorBoard se iniciará automáticamente")
+            print("[LAUNCH] Ejecutando entrenamiento intensivo...")
+            print("[IDEA] Monitoreo disponible: nvidia-smi (en otra terminal)")
+            print("[CHART] Logs: TensorBoard se iniciará automáticamente")
             print("-" * 80)
             
             # Execute training
@@ -323,16 +323,16 @@ class Phase1TrainingInterface:
                 self.display.show_success(
                     f"Entrenamiento completado exitosamente en {training_duration/60:.1f} minutos"
                 )
-                print(f"🎉 Modelo '{model_name}' guardado en directorio models/")
-                print(f"📁 Ubicación: models/{model_name}.keras")
-                print("🎨 Ahora puedes usar FASE 2: Generación de Texto")
+                print(f" Modelo '{model_name}' guardado en directorio models/")
+                print(f" Ubicación: models/{model_name}.keras")
+                print("[ART] Ahora puedes usar FASE 2: Generación de Texto")
                 self.display.pause_for_user()
                 return True
             else:
                 self.display.show_error(
                     f"Error durante entrenamiento (código: {result.returncode})"
                 )
-                print("💡 Revisa los logs anteriores para detalles del error")
+                print("[IDEA] Revisa los logs anteriores para detalles del error")
                 self.display.pause_for_user()
                 return False
                 
@@ -348,24 +348,24 @@ class Phase1TrainingInterface:
     
     def show_training_tips(self):
         """Display academic tips for training optimization."""
-        print("\n💡 CONSEJOS ACADÉMICOS PARA ENTRENAMIENTO ÓPTIMO")
+        print("\n[IDEA] CONSEJOS ACADÉMICOS PARA ENTRENAMIENTO ÓPTIMO")
         print("=" * 60)
-        print("🎯 PREPARACIÓN DE DATOS:")
+        print("[TARGET] PREPARACIÓN DE DATOS:")
         print("   • Usa archivos de texto >50KB para mejores resultados")
         print("   • Texto en español o inglés funciona mejor")
         print("   • Evita archivos con muchos caracteres especiales")
         print()
-        print("⚡ OPTIMIZACIÓN GPU:")
+        print("[FAST] OPTIMIZACIÓN GPU:")
         print("   • Asegúrate que nvidia-smi muestre tu RTX 2000 Ada")
         print("   • Cierra aplicaciones que usen GPU (juegos, videos)")
         print("   • Monitorea temperatura con 'watch nvidia-smi'")
         print()
-        print("🧠 CONFIGURACIÓN DE ÉPOCAS:")
+        print("[BRAIN] CONFIGURACIÓN DE ÉPOCAS:")
         print("   • 10-20 épocas: Suficiente para textos simples")
         print("   • 30-50 épocas: Recomendado para calidad profesional")
         print("   • 50+ épocas: Solo para investigación avanzada")
         print()
-        print("📊 MONITOREO:")
+        print("[CHART] MONITOREO:")
         print("   • Loss <1.5: Excelente calidad")
         print("   • Loss 1.5-2.0: Calidad aceptable")
         print("   • Loss >2.0: Necesita más entrenamiento")

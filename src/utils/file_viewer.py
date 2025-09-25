@@ -121,9 +121,9 @@ class FileViewer:
                 
                 info.update({
                     'lines': len(lines),
-                    'errors': len([l for l in lines if 'ERROR' in l or '❌' in l]),
-                    'warnings': len([l for l in lines if 'WARNING' in l or '⚠️' in l]),
-                    'success_markers': len([l for l in lines if '✅' in l or 'SUCCESS' in l])
+                    'errors': len([l for l in lines if 'ERROR' in l or '[X]' in l]),
+                    'warnings': len([l for l in lines if 'WARNING' in l or 'WARNING:' in l]),
+                    'success_markers': len([l for l in lines if '[OK]' in l or 'SUCCESS' in l])
                 })
                 
                 # Detectar tipo de log específico
@@ -229,7 +229,7 @@ class FileViewer:
         files = self.scan_generated_files()
         
         summary = []
-        summary.append("📁 ARCHIVOS GENERADOS POR EL FRAMEWORK")
+        summary.append(" ARCHIVOS GENERADOS POR EL FRAMEWORK")
         summary.append("=" * 60)
         
         total_files = 0
@@ -240,10 +240,10 @@ class FileViewer:
                 continue
                 
             category_display = {
-                'logs': '📝 LOGS',
-                'reports': '📊 REPORTES', 
-                'visualizations': '📈 VISUALIZACIONES',
-                'models': '🧠 MODELOS'
+                'logs': '[DOC] LOGS',
+                'reports': '[CHART] REPORTES', 
+                'visualizations': '[GROWTH] VISUALIZACIONES',
+                'models': '[BRAIN] MODELOS'
             }.get(category, category.upper())
             
             summary.append(f"\n{category_display} ({len(file_list)} archivos):")
@@ -258,10 +258,10 @@ class FileViewer:
                 extra_info = ""
                 if category == 'logs':
                     if 'errors' in file_info:
-                        extra_info = f" (❌ {file_info['errors']} errores)"
+                        extra_info = f" ([X] {file_info['errors']} errores)"
                 elif category == 'reports':
                     if 'success_rate' in file_info:
-                        extra_info = f" (✅ {file_info['success_rate']:.1%} éxito)"
+                        extra_info = f" ([OK] {file_info['success_rate']:.1%} éxito)"
                 
                 summary.append(f"  • {name} - {size} - {date}{extra_info}")
                 total_files += 1
@@ -270,7 +270,7 @@ class FileViewer:
             if len(file_list) > 5:
                 summary.append(f"  ... y {len(file_list) - 5} archivos más")
         
-        summary.append(f"\n📊 RESUMEN TOTAL:")
+        summary.append(f"\n[CHART] RESUMEN TOTAL:")
         summary.append(f"  Total archivos: {total_files}")
         summary.append(f"  Tamaño total: {self._human_size(total_size)}")
         
@@ -311,11 +311,11 @@ class FileViewer:
             
             for i, line in enumerate(lines):
                 line_num = i + 1
-                if any(marker in line for marker in ['ERROR', '❌', 'FAILED']):
+                if any(marker in line for marker in ['ERROR', '[X]', 'FAILED']):
                     analysis['errors'].append((line_num, line.strip()))
-                elif any(marker in line for marker in ['WARNING', '⚠️', 'WARN']):
+                elif any(marker in line for marker in ['WARNING', 'WARNING:', 'WARN']):
                     analysis['warnings'].append((line_num, line.strip()))
-                elif any(marker in line for marker in ['✅', 'SUCCESS', 'COMPLETED']):
+                elif any(marker in line for marker in ['[OK]', 'SUCCESS', 'COMPLETED']):
                     analysis['success'].append((line_num, line.strip()))
             
             return {
@@ -433,6 +433,6 @@ def quick_file_scan() -> str:
 
 
 if __name__ == "__main__":
-    print("📁 VISOR DE ARCHIVOS ROBO-POET")
+    print(" VISOR DE ARCHIVOS ROBO-POET")
     print("=" * 50)
     print(quick_file_scan())

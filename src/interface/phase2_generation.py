@@ -41,17 +41,17 @@ class Phase2GenerationInterface:
     def run_generation_studio(self) -> bool:
         """Execute Phase 2 generation studio workflow."""
         self.display.clear_screen()
-        print("🎨" * 15 + " FASE 2: ESTUDIO DE GENERACIÓN AVANZADO " + "🎨" * 15)
+        print("[ART]" * 15 + " FASE 2: ESTUDIO DE GENERACIÓN AVANZADO " + "[ART]" * 15)
         print("=" * 80)
-        print("🎓 GENERACIÓN DE TEXTO CON MODELOS PRE-ENTRENADOS")
-        print("🧠 8 modos especializados para diferentes necesidades académicas")
+        print("[GRAD] GENERACIÓN DE TEXTO CON MODELOS PRE-ENTRENADOS")
+        print("[BRAIN] 8 modos especializados para diferentes necesidades académicas")
         print("=" * 80)
         
         # Step 1: List and select model
         models = self.file_manager.list_available_models_enhanced()
         if not models:
             self.display.show_error("No hay modelos entrenados disponibles")
-            print("💡 Ejecuta primero FASE 1: Entrenamiento Intensivo")
+            print("[IDEA] Ejecuta primero FASE 1: Entrenamiento Intensivo")
             self.display.pause_for_user()
             return False
         
@@ -70,20 +70,20 @@ class Phase2GenerationInterface:
     
     def _select_model(self, models: list) -> Optional[Dict]:
         """Display models and let user select one."""
-        print("\n📊 MODELOS DISPONIBLES PARA GENERACIÓN")
+        print("\n[CHART] MODELOS DISPONIBLES PARA GENERACIÓN")
         print("=" * 60)
         
         for i, model_info in enumerate(models, 1):
             print(f"{i}. ", end="")
             self.display.format_model_info(model_info)
         
-        choice = self.validator.get_menu_choice("🎯 Selecciona modelo", len(models))
+        choice = self.validator.get_menu_choice("[TARGET] Selecciona modelo", len(models))
         return models[choice - 1]
     
     def _load_model_and_metadata(self, selected_model: Dict) -> tuple:
         """Load selected model and its metadata."""
         try:
-            print(f"\n📚 Cargando modelo: {selected_model['name']}")
+            print(f"\n[BOOKS] Cargando modelo: {selected_model['name']}")
             
             # Load model
             model_manager = ModelManager()
@@ -105,7 +105,7 @@ class Phase2GenerationInterface:
                 # Fallback tokenizer creation
                 char_to_idx, idx_to_char = self._create_fallback_tokenizer()
             
-            print("✅ Modelo y metadata cargados exitosamente")
+            print("[OK] Modelo y metadata cargados exitosamente")
             return model, char_to_idx, idx_to_char, metadata
             
         except Exception as e:
@@ -128,11 +128,11 @@ class Phase2GenerationInterface:
     
     def _show_model_summary(self, selected_model: Dict, metadata: Dict) -> None:
         """Display detailed model summary for academic purposes."""
-        print(f"\n🤖 MODELO SELECCIONADO: {selected_model['name']}")
+        print(f"\n[AI] MODELO SELECCIONADO: {selected_model['name']}")
         print("=" * 60)
-        print(f"📅 Creado: {selected_model['created'].strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"💾 Tamaño: {selected_model['size_mb']:.1f} MB")
-        print(f"⭐ Calidad: {selected_model['quality_rating']}")
+        print(f" Creado: {selected_model['created'].strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"[SAVE] Tamaño: {selected_model['size_mb']:.1f} MB")
+        print(f"[STAR] Calidad: {selected_model['quality_rating']}")
         
         if metadata:
             self.display.show_model_stats_summary(metadata)
@@ -153,7 +153,7 @@ class Phase2GenerationInterface:
             self.display.clear_screen()
             self._show_generation_menu(model_name)
             
-            choice = self.validator.get_menu_choice("🎯 Selecciona modo de generación", 8)
+            choice = self.validator.get_menu_choice("[TARGET] Selecciona modo de generación", 8)
             
             try:
                 if choice == 1:
@@ -171,11 +171,11 @@ class Phase2GenerationInterface:
                 elif choice == 7:
                     self._manage_generations()
                 elif choice == 8:
-                    print("🎯 Regresando al menú principal...")
+                    print("[TARGET] Regresando al menú principal...")
                     return True
                 
             except KeyboardInterrupt:
-                print("\n⚠️ Operación interrumpida")
+                print("\nWARNING: Operación interrumpida")
                 if self.validator.get_confirmation("¿Regresar al menú principal?", True):
                     return True
             except Exception as e:
@@ -184,99 +184,99 @@ class Phase2GenerationInterface:
     
     def _show_generation_menu(self, model_name: str) -> None:
         """Display the generation studio menu."""
-        print("🎨 ESTUDIO DE GENERACIÓN AVANZADO")
+        print("[ART] ESTUDIO DE GENERACIÓN AVANZADO")
         print("=" * 50)
-        print(f"🤖 Modelo activo: {model_name}")
+        print(f"[AI] Modelo activo: {model_name}")
         print()
-        print("🎯 MODOS DE GENERACIÓN:")
-        print("1. 🚀 Generación Rápida (presets optimizados)")
-        print("2. 🔬 Laboratorio Creativo (control total)")
-        print("3. 🎮 Sesión Interactiva (comandos avanzados)")
-        print("4. ⚗️ Experimentos en Lote (análisis sistemático)")
-        print("5. 🎨 Plantillas Temáticas (estilos literarios)")
+        print("[TARGET] MODOS DE GENERACIÓN:")
+        print("1. [LAUNCH] Generación Rápida (presets optimizados)")
+        print("2. [SCIENCE] Laboratorio Creativo (control total)")
+        print("3. [GAME] Sesión Interactiva (comandos avanzados)")
+        print("4.  Experimentos en Lote (análisis sistemático)")
+        print("5. [ART] Plantillas Temáticas (estilos literarios)")
         print()
-        print("📊 ANÁLISIS Y GESTIÓN:")
-        print("6. 📈 Análisis Detallado del Modelo")
-        print("7. 📁 Gestionar Generaciones Guardadas")
-        print("8. 🚪 Regresar al Menú Principal")
+        print("[CHART] ANÁLISIS Y GESTIÓN:")
+        print("6. [GROWTH] Análisis Detallado del Modelo")
+        print("7.  Gestionar Generaciones Guardadas")
+        print("8.  Regresar al Menú Principal")
         print("=" * 50)
     
     def _show_detailed_analysis(self, metadata: Dict) -> None:
         """Show comprehensive model analysis."""
-        print("\n📈 ANÁLISIS DETALLADO DEL MODELO")
+        print("\n[GROWTH] ANÁLISIS DETALLADO DEL MODELO")
         print("=" * 60)
         
         if not metadata:
-            print("⚠️ Metadata no disponible para análisis detallado")
+            print("WARNING: Metadata no disponible para análisis detallado")
             self.display.pause_for_user()
             return
         
         # Training metrics
-        print("🎯 MÉTRICAS DE ENTRENAMIENTO:")
-        print(f"   📈 Épocas completadas: {metadata.get('final_epoch', 'N/A')}")
-        print(f"   📉 Loss final: {metadata.get('final_loss', 'N/A'):.4f}" 
-              if isinstance(metadata.get('final_loss'), (int, float)) else "   📉 Loss final: N/A")
-        print(f"   📊 Accuracy final: {metadata.get('final_accuracy', 'N/A'):.4f}" 
-              if isinstance(metadata.get('final_accuracy'), (int, float)) else "   📊 Accuracy final: N/A")
-        print(f"   ⏱️ Duración entrenamiento: {metadata.get('training_duration', 'N/A')}")
+        print("[TARGET] MÉTRICAS DE ENTRENAMIENTO:")
+        print(f"   [GROWTH] Épocas completadas: {metadata.get('final_epoch', 'N/A')}")
+        print(f"    Loss final: {metadata.get('final_loss', 'N/A'):.4f}" 
+              if isinstance(metadata.get('final_loss'), (int, float)) else "    Loss final: N/A")
+        print(f"   [CHART] Accuracy final: {metadata.get('final_accuracy', 'N/A'):.4f}" 
+              if isinstance(metadata.get('final_accuracy'), (int, float)) else "   [CHART] Accuracy final: N/A")
+        print(f"   [TIME] Duración entrenamiento: {metadata.get('training_duration', 'N/A')}")
         
         # Model architecture
-        print(f"\n🧠 ARQUITECTURA:")
-        print(f"   🎯 Vocabulario: {metadata.get('vocab_size', 'N/A')} caracteres únicos")
-        print(f"   📏 Longitud de secuencia: {metadata.get('sequence_length', 'N/A')} tokens")
-        print(f"   🧠 LSTM units: {metadata.get('lstm_units', 'N/A')}")
-        print(f"   💧 Dropout rate: {metadata.get('dropout_rate', 'N/A')}")
-        print(f"   📦 Batch size: {metadata.get('batch_size', 'N/A')}")
+        print(f"\n[BRAIN] ARQUITECTURA:")
+        print(f"   [TARGET] Vocabulario: {metadata.get('vocab_size', 'N/A')} caracteres únicos")
+        print(f"    Longitud de secuencia: {metadata.get('sequence_length', 'N/A')} tokens")
+        print(f"   [BRAIN] LSTM units: {metadata.get('lstm_units', 'N/A')}")
+        print(f"    Dropout rate: {metadata.get('dropout_rate', 'N/A')}")
+        print(f"   [PACKAGE] Batch size: {metadata.get('batch_size', 'N/A')}")
         
         # Performance recommendations
         final_loss = metadata.get('final_loss')
         if isinstance(final_loss, (int, float)):
-            print(f"\n🎯 RECOMENDACIONES DE USO:")
+            print(f"\n[TARGET] RECOMENDACIONES DE USO:")
             if final_loss < 1.0:
-                print("   🌟 Excelente para generación creativa y narrativa")
-                print("   📝 Usa temperature 0.7-1.0 para mejores resultados")
-                print("   📏 Longitudes 200-500 caracteres son óptimas")
+                print("   [STAR] Excelente para generación creativa y narrativa")
+                print("   [DOC] Usa temperature 0.7-1.0 para mejores resultados")
+                print("    Longitudes 200-500 caracteres son óptimas")
             elif final_loss < 1.5:
-                print("   ⭐ Bueno para textos coherentes y experimentación")
-                print("   📝 Usa temperature 0.6-0.9 para estabilidad")
-                print("   📏 Longitudes 150-300 caracteres recomendadas")
+                print("   [STAR] Bueno para textos coherentes y experimentación")
+                print("   [DOC] Usa temperature 0.6-0.9 para estabilidad")
+                print("    Longitudes 150-300 caracteres recomendadas")
             elif final_loss < 2.0:
-                print("   📊 Aceptable para pruebas y aprendizaje")
-                print("   📝 Usa temperature 0.5-0.7 para mayor coherencia")
-                print("   📏 Longitudes cortas (100-200) son más estables")
+                print("   [CHART] Aceptable para pruebas y aprendizaje")
+                print("   [DOC] Usa temperature 0.5-0.7 para mayor coherencia")
+                print("    Longitudes cortas (100-200) son más estables")
             else:
-                print("   ⚠️ Modelo requiere más entrenamiento")
-                print("   📝 Usa temperature baja (0.4-0.6) y longitudes cortas")
-                print("   🔄 Considera entrenar más épocas")
+                print("   WARNING: Modelo requiere más entrenamiento")
+                print("   [DOC] Usa temperature baja (0.4-0.6) y longitudes cortas")
+                print("   [CYCLE] Considera entrenar más épocas")
         
         print("=" * 60)
         self.display.pause_for_user()
     
     def _manage_generations(self) -> None:
         """Manage saved generations."""
-        print("\n📁 GESTIONAR GENERACIONES GUARDADAS")
+        print("\n GESTIONAR GENERACIONES GUARDADAS")
         print("=" * 50)
         
         generations = self.file_manager.get_available_generations()
         
         if not generations:
-            print("📭 No hay generaciones guardadas")
+            print(" No hay generaciones guardadas")
             self.display.pause_for_user()
             return
         
-        print(f"📊 Total de generaciones guardadas: {len(generations)}")
+        print(f"[CHART] Total de generaciones guardadas: {len(generations)}")
         print()
         
         for i, gen in enumerate(generations[:10], 1):  # Show last 10
             print(f"{i}. {gen['timestamp']} ({gen['size_kb']:.1f} KB)")
             if gen['metadata']:
                 meta = gen['metadata']
-                print(f"   🌱 Seed: \"{meta.get('seed', 'N/A')}\"")
-                print(f"   🌡️ T={meta.get('temperature', 'N/A')} | L={meta.get('length', 'N/A')}")
+                print(f"    Seed: \"{meta.get('seed', 'N/A')}\"")
+                print(f"    T={meta.get('temperature', 'N/A')} | L={meta.get('length', 'N/A')}")
             print()
         
         if len(generations) > 10:
             print(f"   ... y {len(generations) - 10} más")
         
-        print("\n💡 Las generaciones se guardan en el directorio 'generations/'")
+        print("\n[IDEA] Las generaciones se guardan en el directorio 'generations/'")
         self.display.pause_for_user()

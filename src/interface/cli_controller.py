@@ -69,13 +69,13 @@ class CLIController:
                 return self._handle_interactive_mode()
                 
         except KeyboardInterrupt:
-            self._print_info("\\n🛑 Operation cancelled by user")
+            self._print_info("\\n Operation cancelled by user")
             return 130  # Standard exit code for Ctrl+C
         except RoboPoetError as e:
             self._print_error(f"Robo-Poet Error: {e.message}")
             if e.recovery_suggestions:
                 for suggestion in e.recovery_suggestions:
-                    self._print_info(f"💡 Suggestion: {suggestion}")
+                    self._print_info(f"[IDEA] Suggestion: {suggestion}")
             return 1
         except Exception as e:
             self._print_error(f"Unexpected error: {e}")
@@ -85,23 +85,23 @@ class CLIController:
     def _handle_training(self, config: CLIConfig) -> int:
         """Handle training workflow."""
         try:
-            self._print_header("🎓 ROBO-POET TRAINING MODE")
-            self._print_info(f"📁 Training on: {config.text_file}")
-            self._print_info(f"🔄 Epochs: {config.epochs}")
+            self._print_header("[GRAD] ROBO-POET TRAINING MODE")
+            self._print_info(f" Training on: {config.text_file}")
+            self._print_info(f"[CYCLE] Epochs: {config.epochs}")
             
             # Show system status
             status = self.cli_service.get_system_status()
-            gpu_status = "✅ Available" if status.get("gpu_available") else "❌ Not Available" 
-            self._print_info(f"🎯 GPU: {gpu_status}")
+            gpu_status = "[OK] Available" if status.get("gpu_available") else "[X] Not Available" 
+            self._print_info(f"[TARGET] GPU: {gpu_status}")
             
             # Train model
             model_id = self.cli_service.train_model_from_file(config)
             
-            self._print_success(f"🎉 Training completed! Model ID: {model_id}")
+            self._print_success(f" Training completed! Model ID: {model_id}")
             
             # Show model location
             models_dir = status.get("storage_paths", {}).get("models", "./models")
-            self._print_info(f"📍 Model saved to: {models_dir}")
+            self._print_info(f" Model saved to: {models_dir}")
             
             return 0
             
@@ -112,19 +112,19 @@ class CLIController:
     def _handle_generation(self, config: CLIConfig) -> int:
         """Handle text generation workflow."""
         try:
-            self._print_header("🎨 ROBO-POET GENERATION MODE")
-            self._print_info(f"🤖 Model: {config.model_file}")
-            self._print_info(f"🌱 Seed: '{config.seed_text}'")
-            self._print_info(f"🌡️ Temperature: {config.temperature}")
-            self._print_info(f"📏 Length: {config.length}")
+            self._print_header("[ART] ROBO-POET GENERATION MODE")
+            self._print_info(f"[AI] Model: {config.model_file}")
+            self._print_info(f" Seed: '{config.seed_text}'")
+            self._print_info(f" Temperature: {config.temperature}")
+            self._print_info(f" Length: {config.length}")
             
             # Generate text
             result = self.cli_service.generate_text(config)
             
             # Display result
-            self._print_header("📝 GENERATED TEXT")
+            self._print_header("[DOC] GENERATED TEXT")
             print(result)
-            self._print_success("\\n✅ Generation completed!")
+            self._print_success("\\n[OK] Generation completed!")
             
             return 0
             
@@ -138,7 +138,7 @@ class CLIController:
             # Import menu system dynamically to avoid circular imports
             from src.interface.menu_system import AcademicMenuSystem
             
-            self._print_header("🎓 ROBO-POET ACADEMIC INTERFACE")
+            self._print_header("[GRAD] ROBO-POET ACADEMIC INTERFACE")
             
             # Show system status
             status = self.cli_service.get_system_status()
@@ -152,7 +152,7 @@ class CLIController:
             
         except ImportError:
             self._print_error("Academic menu system not available")
-            self._print_info("💡 Try using direct mode: --text <file> or --generate <model>")
+            self._print_info("[IDEA] Try using direct mode: --text <file> or --generate <model>")
             return 1
         except Exception as e:
             self._print_error(f"Interactive mode failed: {e}")
@@ -162,7 +162,7 @@ class CLIController:
         """Parse command line arguments."""
         parser = argparse.ArgumentParser(
             prog="robo-poet",
-            description="🎓 Robo-Poet Academic Neural Text Generation Framework",
+            description="[GRAD] Robo-Poet Academic Neural Text Generation Framework",
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
@@ -234,35 +234,35 @@ Examples:
     
     def _print_success(self, message: str) -> None:
         """Print success message."""
-        print(f"✅ {message}")
+        print(f"[OK] {message}")
     
     def _print_error(self, message: str) -> None:
         """Print error message."""
-        print(f"❌ {message}", file=sys.stderr)
+        print(f"[X] {message}", file=sys.stderr)
     
     def _print_warning(self, message: str) -> None:
         """Print warning message."""
-        print(f"⚠️ {message}")
+        print(f"WARNING: {message}")
     
     def _print_info(self, message: str) -> None:
         """Print info message."""
-        print(f"ℹ️ {message}")
+        print(f"ℹ {message}")
     
     def _print_system_status(self, status: dict) -> None:
         """Print formatted system status."""
-        print("🔍 SYSTEM STATUS:")
+        print("[SEARCH] SYSTEM STATUS:")
         print("-" * 50)
         
-        gpu_status = "✅ Available" if status.get("gpu_available") else "❌ Not Available"
-        print(f"🎯 GPU: {gpu_status}")
+        gpu_status = "[OK] Available" if status.get("gpu_available") else "[X] Not Available"
+        print(f"[TARGET] GPU: {gpu_status}")
         
         if "model_config" in status:
             model_cfg = status["model_config"]
-            print(f"🧠 Model Config: {model_cfg.get('vocab_size', 'N/A')} vocab, {model_cfg.get('lstm_units', 'N/A')} LSTM units")
+            print(f"[BRAIN] Model Config: {model_cfg.get('vocab_size', 'N/A')} vocab, {model_cfg.get('lstm_units', 'N/A')} LSTM units")
         
         if "training_config" in status:
             train_cfg = status["training_config"]
-            print(f"🎓 Training: {train_cfg.get('default_epochs', 'N/A')} epochs, batch {train_cfg.get('default_batch_size', 'N/A')}")
+            print(f"[GRAD] Training: {train_cfg.get('default_epochs', 'N/A')} epochs, batch {train_cfg.get('default_batch_size', 'N/A')}")
         
         print("-" * 50)
 

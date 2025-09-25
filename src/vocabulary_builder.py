@@ -69,7 +69,7 @@ class EnhancedVocabularyBuilder:
         Returns:
             Dict: Mapeo carácter -> índice
         """
-        logger.info("📚 Construyendo vocabulario de caracteres expandido...")
+        logger.info("[BOOKS] Construyendo vocabulario de caracteres expandido...")
         
         # Caracteres básicos del texto
         chars = set(text)
@@ -107,7 +107,7 @@ class EnhancedVocabularyBuilder:
             if char not in vocab:  # Evitar duplicados con especiales
                 vocab[char] = len(vocab)
         
-        logger.info(f"✅ Vocabulario de caracteres construido: {len(vocab)} tokens")
+        logger.info(f"[OK] Vocabulario de caracteres construido: {len(vocab)} tokens")
         return vocab
     
     def build_subword_vocab(self, text: str, num_merges: int = 1000) -> Dict[str, int]:
@@ -121,7 +121,7 @@ class EnhancedVocabularyBuilder:
         Returns:
             Dict: Vocabulario expandido carácter+subword -> índice
         """
-        logger.info("🔧 Iniciando construcción BPE de vocabulario...")
+        logger.info("[FIX] Iniciando construcción BPE de vocabulario...")
         logger.info(f"Texto de entrada: {len(text):,} caracteres")
         
         # Paso 1: Inicializar con vocabulario de caracteres
@@ -137,7 +137,7 @@ class EnhancedVocabularyBuilder:
         
         for merge_num in range(num_merges):
             if len(vocab) >= self.max_vocab_size:
-                logger.info(f"⚠️ Límite de vocabulario alcanzado: {len(vocab)}")
+                logger.info(f"WARNING: Límite de vocabulario alcanzado: {len(vocab)}")
                 break
             
             # Obtener pares de símbolos más frecuentes
@@ -165,7 +165,7 @@ class EnhancedVocabularyBuilder:
             if merge_num % 100 == 0 and merge_num > 0:
                 logger.info(f"Merge {merge_num:3d}: '{new_token}' (freq: {pairs[best_pair]})")
         
-        logger.info(f"✅ BPE completado: {len(vocab)} tokens totales")
+        logger.info(f"[OK] BPE completado: {len(vocab)} tokens totales")
         
         # Guardar estadísticas
         self.vocab = vocab
@@ -423,7 +423,7 @@ class EnhancedVocabularyBuilder:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(vocab_data, f, ensure_ascii=False, indent=2)
         
-        logger.info(f"💾 Vocabulario guardado: {filepath}")
+        logger.info(f"[SAVE] Vocabulario guardado: {filepath}")
     
     def load_vocabulary(self, filepath: Path) -> None:
         """
@@ -443,7 +443,7 @@ class EnhancedVocabularyBuilder:
         self.max_vocab_size = config.get('max_vocab_size', self.max_vocab_size)
         self.special_tokens = config.get('special_tokens', self.special_tokens)
         
-        logger.info(f"📖 Vocabulario cargado: {filepath} ({len(self.vocab)} tokens)")
+        logger.info(f" Vocabulario cargado: {filepath} ({len(self.vocab)} tokens)")
 
 
 def expand_vocabulary_for_model(text_file: str, output_vocab: str = "vocab_5000.json") -> VocabularyStats:
@@ -457,14 +457,14 @@ def expand_vocabulary_for_model(text_file: str, output_vocab: str = "vocab_5000.
     Returns:
         VocabularyStats: Estadísticas de expansión
     """
-    logger.info("🚀 Iniciando expansión de vocabulario para modelo principal")
+    logger.info("[LAUNCH] Iniciando expansión de vocabulario para modelo principal")
     
     # Leer archivo de texto
     text_path = Path(text_file)
     if not text_path.exists():
         raise FileNotFoundError(f"Archivo no encontrado: {text_file}")
     
-    logger.info(f"📖 Leyendo corpus: {text_file}")
+    logger.info(f" Leyendo corpus: {text_file}")
     with open(text_path, 'r', encoding='utf-8') as f:
         text = f.read()
     
@@ -483,7 +483,7 @@ def expand_vocabulary_for_model(text_file: str, output_vocab: str = "vocab_5000.
     
     # Log estadísticas finales
     logger.info("=" * 50)
-    logger.info("📊 EXPANSIÓN DE VOCABULARIO COMPLETADA")
+    logger.info("[CHART] EXPANSIÓN DE VOCABULARIO COMPLETADA")
     logger.info("=" * 50)
     logger.info(f"Vocabulario original: {stats.original_chars} caracteres")
     logger.info(f"Vocabulario expandido: {stats.expanded_tokens} tokens")
@@ -499,7 +499,7 @@ if __name__ == "__main__":
     """Test del constructor de vocabulario."""
     import sys
     
-    print("🧪 PROBANDO CONSTRUCTOR DE VOCABULARIO")
+    print(" PROBANDO CONSTRUCTOR DE VOCABULARIO")
     print("="*50)
     
     # Texto de prueba
@@ -515,24 +515,24 @@ if __name__ == "__main__":
     
     # Test vocabulario de caracteres
     char_vocab = builder.build_character_vocab(test_text)
-    print(f"📚 Vocabulario de caracteres: {len(char_vocab)} tokens")
+    print(f"[BOOKS] Vocabulario de caracteres: {len(char_vocab)} tokens")
     print(f"Tokens especiales: {builder.special_tokens}")
     
     # Test BPE
     subword_vocab = builder.build_subword_vocab(test_text, num_merges=20)
-    print(f"🔧 Vocabulario BPE: {len(subword_vocab)} tokens")
+    print(f"[FIX] Vocabulario BPE: {len(subword_vocab)} tokens")
     
     # Test tokenización
     sample = "The power of language"
     tokens = builder.tokenize_text(sample)
     detokenized = builder.detokenize(tokens)
-    print(f"📝 Original: '{sample}'")
-    print(f"🔢 Tokens: {tokens}")
-    print(f"📝 Detokenizado: '{detokenized}'")
+    print(f"[DOC] Original: '{sample}'")
+    print(f" Tokens: {tokens}")
+    print(f"[DOC] Detokenizado: '{detokenized}'")
     
     # Estadísticas
     stats = builder.get_vocabulary_stats(test_text)
-    print(f"\n📊 Estadísticas:")
+    print(f"\n[CHART] Estadísticas:")
     print(f"   Caracteres únicos: {stats.original_chars}")
     print(f"   Tokens expandidos: {stats.expanded_tokens}")
     print(f"   Cobertura: {stats.coverage_percent:.1f}%")
@@ -541,12 +541,12 @@ if __name__ == "__main__":
     # Test con archivo real si está disponible
     test_file = "The+48+Laws+Of+Power_texto.txt"
     if Path(test_file).exists():
-        print(f"\n🚀 Probando con archivo real: {test_file}")
+        print(f"\n[LAUNCH] Probando con archivo real: {test_file}")
         try:
             stats = expand_vocabulary_for_model(test_file, "test_vocab.json")
-            print(f"✅ Expansión exitosa: {stats.expanded_tokens} tokens")
+            print(f"[OK] Expansión exitosa: {stats.expanded_tokens} tokens")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"[X] Error: {e}")
     else:
-        print(f"\n⚠️ Archivo de prueba no encontrado: {test_file}")
+        print(f"\nWARNING: Archivo de prueba no encontrado: {test_file}")
         print("   (Esto es normal si no estás en el directorio del proyecto)")

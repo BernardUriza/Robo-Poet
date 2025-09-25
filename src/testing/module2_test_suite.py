@@ -170,7 +170,7 @@ class Module2TestSuite:
                 
                 if model_files:
                     self.temp_model_path = str(model_files[0])
-                    self.logger.info(f"✅ Modelo entrenado exitosamente: {self.temp_model_path}")
+                    self.logger.info(f"[OK] Modelo entrenado exitosamente: {self.temp_model_path}")
                     
                     # Verificar que el modelo es válido
                     param_count = model.count_params()
@@ -190,7 +190,7 @@ class Module2TestSuite:
                 raise Exception(f"Entrenamiento falló: {result.stderr}")
                 
         except Exception as e:
-            self.logger.error(f"❌ Test de entrenamiento falló: {e}")
+            self.logger.error(f"[X] Test de entrenamiento falló: {e}")
             test_result = {
                 'status': 'FAILED',
                 'error': str(e),
@@ -234,7 +234,7 @@ class Module2TestSuite:
                     'total_time': time.time() - test_start
                 }
                 
-                self.logger.info(f"✅ Análisis de gradientes completado")
+                self.logger.info(f"[OK] Análisis de gradientes completado")
                 self.logger.info(f"   Vanishing: {test_result['has_vanishing']}")
                 self.logger.info(f"   Exploding: {test_result['has_exploding']}")
                 
@@ -242,7 +242,7 @@ class Module2TestSuite:
                 raise Exception("Análisis de gradientes retornó resultados vacíos")
                 
         except Exception as e:
-            self.logger.error(f"❌ Test de análisis de gradientes falló: {e}")
+            self.logger.error(f"[X] Test de análisis de gradientes falló: {e}")
             test_result = {
                 'status': 'FAILED',
                 'error': str(e),
@@ -291,7 +291,7 @@ class Module2TestSuite:
                     'total_time': time.time() - test_start
                 }
                 
-                self.logger.info(f"✅ Análisis de minima completado")
+                self.logger.info(f"[OK] Análisis de minima completado")
                 self.logger.info(f"   Categoría: {test_result['sharpness_category']}")
                 self.logger.info(f"   Sharpness: {test_result['overall_sharpness']:.4f}")
                 
@@ -299,7 +299,7 @@ class Module2TestSuite:
                 raise Exception("Análisis de minima retornó resultados vacíos")
                 
         except Exception as e:
-            self.logger.error(f"❌ Test de análisis de minima falló: {e}")
+            self.logger.error(f"[X] Test de análisis de minima falló: {e}")
             test_result = {
                 'status': 'FAILED',
                 'error': str(e),
@@ -351,7 +351,7 @@ class Module2TestSuite:
                     'total_time': time.time() - test_start
                 }
                 
-                self.logger.info(f"✅ Experimentos de ablación completados")
+                self.logger.info(f"[OK] Experimentos de ablación completados")
                 self.logger.info(f"   Mejor configuración: {test_result['best_configuration']}")
                 
             else:
@@ -359,7 +359,7 @@ class Module2TestSuite:
                 raise Exception(f"Experimentos de ablación fallaron: {error}")
                 
         except Exception as e:
-            self.logger.error(f"❌ Test de ablación falló: {e}")
+            self.logger.error(f"[X] Test de ablación falló: {e}")
             test_result = {
                 'status': 'FAILED',
                 'error': str(e),
@@ -398,7 +398,7 @@ class Module2TestSuite:
                     'total_time': time.time() - test_start
                 }
                 
-                self.logger.info(f"✅ Cirugía de emergencia completada")
+                self.logger.info(f"[OK] Cirugía de emergencia completada")
                 self.logger.info(f"   Modelo operado: {operated_model_path}")
                 self.logger.info(f"   Éxito: {test_result['surgery_successful']}")
                 
@@ -410,7 +410,7 @@ class Module2TestSuite:
                 raise Exception("Cirugía no retornó modelo operado válido")
                 
         except Exception as e:
-            self.logger.error(f"❌ Test de cirugía falló: {e}")
+            self.logger.error(f"[X] Test de cirugía falló: {e}")
             test_result = {
                 'status': 'FAILED',
                 'error': str(e),
@@ -464,12 +464,12 @@ class Module2TestSuite:
                 'total_time': time.time() - test_start
             }
             
-            self.logger.info(f"✅ Reportes generados")
+            self.logger.info(f"[OK] Reportes generados")
             self.logger.info(f"   JSON: {report_filename}")
             self.logger.info(f"   Text: {text_filename}")
             
         except Exception as e:
-            self.logger.error(f"❌ Test de reportes falló: {e}")
+            self.logger.error(f"[X] Test de reportes falló: {e}")
             test_result = {
                 'status': 'FAILED',
                 'error': str(e),
@@ -569,7 +569,7 @@ class Module2TestSuite:
         report.append("-" * 40)
         
         for test_name, result in report_data['individual_test_results'].items():
-            status_emoji = "✅" if result.get('status') == 'SUCCESS' else "❌"
+            status_emoji = "[OK]" if result.get('status') == 'SUCCESS' else "[X]"
             report.append(f"{status_emoji} {test_name.upper().replace('_', ' ')}")
             
             if result.get('status') == 'SUCCESS':
@@ -658,13 +658,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if args.quick:
-        print("🚀 Ejecutando demo rápido...")
+        print("[LAUNCH] Ejecutando demo rápido...")
         results = run_quick_demo()
     else:
-        print("🧪 Ejecutando suite de tests...")
+        print(" Ejecutando suite de tests...")
         results = run_selected_tests(args.tests)
     
-    print(f"\n{'✅' if results.get('success') else '❌'} Tests completados")
+    print(f"\n{'[OK]' if results.get('success') else '[X]'} Tests completados")
     if results.get('success'):
         stats = results.get('summary_statistics', {})
         print(f"Éxito: {stats.get('successful_tests', 0)}/{stats.get('total_tests', 0)} tests")

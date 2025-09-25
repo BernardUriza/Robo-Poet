@@ -32,58 +32,58 @@ class TelaresDetectorPhase:
         
     def show_telares_header(self):
         """Mostrar header específico para Telares Detector"""
-        print("🚨" * 20 + " TELARES DETECTOR TRAINING " + "🚨" * 20)
+        print("" * 20 + " TELARES DETECTOR TRAINING " + "" * 20)
         print("================================================================================")
-        print("🛡️  SISTEMA DE DETECCIÓN DE ESQUEMAS PIRAMIDALES")
-        print("📚 Entrena modelo para detectar 7 tácticas de manipulación")
-        print("🎯 Dataset: 135 mensajes reales de grupos de WhatsApp/Telegram")
-        print("⚡ Tecnología: Scikit-Learn + TF-IDF (Compatible con WSL2)")
-        print("👨‍💻 Creado por: Bernard Orozco")
+        print("  SISTEMA DE DETECCIÓN DE ESQUEMAS PIRAMIDALES")
+        print("[BOOKS] Entrena modelo para detectar 7 tácticas de manipulación")
+        print("[TARGET] Dataset: 135 mensajes reales de grupos de WhatsApp/Telegram")
+        print("[FAST] Tecnología: Scikit-Learn + TF-IDF (Compatible con WSL2)")
+        print("‍[COMPUTER] Creado por: Bernard Orozco")
         print("================================================================================")
         
     def show_training_menu(self):
         """Menú principal de entrenamiento"""
-        print("\n🎯 OPCIONES DE ENTRENAMIENTO TELARES DETECTOR")
+        print("\n[TARGET] OPCIONES DE ENTRENAMIENTO TELARES DETECTOR")
         print("="*60)
-        print("1. 🔥 ENTRENAR DETECTOR COMPLETO (135 mensajes reales)")
-        print("2. 🧪 ENTRENAR CON CORPUS POÉTICO (Datos de prueba adicionales)")
-        print("3. 📊 ANÁLISIS DE DATOS DE ENTRENAMIENTO")
-        print("4. 🚀 ENTRENAMIENTO RÁPIDO (Solo validación)")
-        print("5. 📈 COMPARAR MODELOS")
-        print("0. 🔙 Volver al menú principal")
+        print("1. [FIRE] ENTRENAR DETECTOR COMPLETO (135 mensajes reales)")
+        print("2.  ENTRENAR CON CORPUS POÉTICO (Datos de prueba adicionales)")
+        print("3. [CHART] ANÁLISIS DE DATOS DE ENTRENAMIENTO")
+        print("4. [LAUNCH] ENTRENAMIENTO RÁPIDO (Solo validación)")
+        print("5. [GROWTH] COMPARAR MODELOS")
+        print("0.  Volver al menú principal")
         print("="*60)
         
     def run_telares_training(self):
         """Ejecutar entrenamiento principal del detector"""
         self.show_telares_header()
         
-        print("\n⚠️  CONFIRMACIÓN DE ENTRENAMIENTO")
+        print("\nWARNING:  CONFIRMACIÓN DE ENTRENAMIENTO")
         print("="*50)
-        print("🏷️  Modelo: Telares Detector")
-        print("📊 Dataset: 135 mensajes reales verificados")
-        print("🎯 Tácticas: 7 tipos de manipulación lingüística")
+        print("  Modelo: Telares Detector")
+        print("[CHART] Dataset: 135 mensajes reales verificados")
+        print("[TARGET] Tácticas: 7 tipos de manipulación lingüística")
         print("⏰ Tiempo estimado: 2-5 minutos")
-        print("🧠 Algoritmo: Multi-Output Logistic Regression + TF-IDF")
+        print("[BRAIN] Algoritmo: Multi-Output Logistic Regression + TF-IDF")
         
-        print("\n⚠️  ADVERTENCIA:")
+        print("\nWARNING:  ADVERTENCIA:")
         print("   Este entrenamiento reemplaza completamente el generador de texto.")
         print("   Se enfocará únicamente en detección de esquemas piramidales.")
         print("   ¿Continuar con el entrenamiento especializado?")
         
-        response = self.input_validator.get_yes_no_input("🚀 ¿Iniciar entrenamiento de Telares Detector? [Y/n]: ")
+        response = self.input_validator.get_yes_no_input("[LAUNCH] ¿Iniciar entrenamiento de Telares Detector? [Y/n]: ")
         
         if not response:
-            print("❌ Entrenamiento cancelado.")
+            print("[X] Entrenamiento cancelado.")
             return False
         
         return self.execute_telares_training()
     
     def execute_telares_training(self):
         """Ejecutar el entrenamiento del detector"""
-        print("\n🔥" * 20 + " INICIANDO ENTRENAMIENTO " + "🔥" * 20)
+        print("\n[FIRE]" * 20 + " INICIANDO ENTRENAMIENTO " + "[FIRE]" * 20)
         print("================================================================================")
-        print("🚀 Ejecutando entrenamiento especializado de Telares Detector...")
-        print("💾 Logs: Se mostrarán en tiempo real")
+        print("[LAUNCH] Ejecutando entrenamiento especializado de Telares Detector...")
+        print("[SAVE] Logs: Se mostrarán en tiempo real")
         print("================================================================================")
         
         try:
@@ -91,14 +91,14 @@ class TelaresDetectorPhase:
             script_path = Path(__file__).parent.parent.parent / "telares_detector_interface.py"
             
             if not script_path.exists():
-                print(f"❌ ERROR: Script no encontrado en {script_path}")
+                print(f"[X] ERROR: Script no encontrado en {script_path}")
                 return False
             
             # Preparar comando de entrenamiento automático
             # El script debe tener modo batch para entrenamiento directo
             training_script = self.create_batch_training_script(script_path)
             
-            print("🎯 Iniciando entrenamiento automático...")
+            print("[TARGET] Iniciando entrenamiento automático...")
             start_time = time.time()
             
             # Ejecutar entrenamiento
@@ -113,16 +113,16 @@ class TelaresDetectorPhase:
                 self.display.show_success(
                     f"Entrenamiento completado exitosamente en {training_duration/60:.1f} minutos"
                 )
-                print("🎉 Telares Detector entrenado y listo para uso")
-                print("🛡️  Ahora puede detectar esquemas piramidales en tiempo real")
-                print("🔍 Use la opción de análisis para probar mensajes")
+                print(" Telares Detector entrenado y listo para uso")
+                print("  Ahora puede detectar esquemas piramidales en tiempo real")
+                print("[SEARCH] Use la opción de análisis para probar mensajes")
                 self.display.pause_for_user()
                 return True
             else:
                 self.display.show_error(
                     f"Error durante entrenamiento (código: {result.returncode})"
                 )
-                print("📋 Error output:")
+                print(" Error output:")
                 print(result.stderr)
                 return False
                 
@@ -150,27 +150,27 @@ from telares_detector_interface import TelaresDetectorSystem
 
 def main():
     """Entrenamiento automático sin interfaz - REEMPLAZA FASE 1 COMPLETAMENTE"""
-    print("🚨" * 20 + " TELARES DETECTOR TRAINING " + "🚨" * 20)
-    print("🚀 REEMPLAZO COMPLETO DE FASE 1: Entrenamiento Anti-Esquemas Piramidales")
-    print("⚡ Compatible WSL2 + Scikit-Learn (sin PyTorch)")
+    print("" * 20 + " TELARES DETECTOR TRAINING " + "" * 20)
+    print("[LAUNCH] REEMPLAZO COMPLETO DE FASE 1: Entrenamiento Anti-Esquemas Piramidales")
+    print("[FAST] Compatible WSL2 + Scikit-Learn (sin PyTorch)")
     
     detector = TelaresDetectorSystem()
     
-    print("📊 Cargando dataset real de 135 mensajes de telares...")
+    print("[CHART] Cargando dataset real de 135 mensajes de telares...")
     X, y = detector.load_training_data()
     
     if X is None or len(X) == 0:
-        print("❌ ERROR: Dataset de telares no encontrado")
-        print("💡 Verificando ubicación: telares_dataset_135.csv")
+        print("[X] ERROR: Dataset de telares no encontrado")
+        print("[IDEA] Verificando ubicación: telares_dataset_135.csv")
         sys.exit(1)
     
-    print(f"✅ Dataset cargado: {{len(X)}} mensajes de grupos reales")
-    print("🔥 Iniciando entrenamiento especializado anti-pirámides...")
+    print(f"[OK] Dataset cargado: {{len(X)}} mensajes de grupos reales")
+    print("[FIRE] Iniciando entrenamiento especializado anti-pirámides...")
     
     success = detector.train_detector()
     
     if success:
-        print("💾 Guardando detector entrenado...")
+        print("[SAVE] Guardando detector entrenado...")
         
         # Crear directorio models si no existe
         models_dir = Path("models")
@@ -183,13 +183,13 @@ def main():
         joblib.dump(detector.classifier, detector.classifier_path)
         joblib.dump(detector.vectorizer, detector.vectorizer_path)
         
-        print("✅ TELARES DETECTOR entrenado y guardado")
-        print(f"📁 Ubicación: {{detector.classifier_path}}")
-        print("🎉 FASE 1 COMPLETAMENTE REEMPLAZADA CON ÉXITO")
-        print("🛡️  Sistema listo para detectar manipulación en tiempo real")
+        print("[OK] TELARES DETECTOR entrenado y guardado")
+        print(f" Ubicación: {{detector.classifier_path}}")
+        print(" FASE 1 COMPLETAMENTE REEMPLAZADA CON ÉXITO")
+        print("  Sistema listo para detectar manipulación en tiempo real")
         sys.exit(0)
     else:
-        print("❌ ERROR: Fallo en el entrenamiento del detector")
+        print("[X] ERROR: Fallo en el entrenamiento del detector")
         sys.exit(1)
 
 if __name__ == "__main__":
@@ -226,13 +226,13 @@ def load_poetic_corpus_as_controls():
     corpus_dir = Path("corpus")
     
     if not corpus_dir.exists():
-        print("⚠️  Directorio 'corpus' no encontrado")
+        print("WARNING:  Directorio 'corpus' no encontrado")
         return [], []
     
     poetic_texts = []
     text_files = list(corpus_dir.glob("*.txt"))
     
-    print(f"📚 Encontrados {{len(text_files)}} archivos de corpus poético")
+    print(f"[BOOKS] Encontrados {{len(text_files)}} archivos de corpus poético")
     
     for txt_file in text_files:
         try:
@@ -242,49 +242,49 @@ def load_poetic_corpus_as_controls():
                 fragments = [content[i:i+150] for i in range(0, len(content), 150) if len(content[i:i+150]) > 50]
                 poetic_texts.extend(fragments[:20])  # Máximo 20 fragmentos por archivo
         except Exception as e:
-            print(f"⚠️  Error leyendo {{txt_file}}: {{e}}")
+            print(f"WARNING:  Error leyendo {{txt_file}}: {{e}}")
     
     # Crear etiquetas: todo 0 (sin manipulación)
     num_labels = 7  # Mismas 7 tácticas que telares
     poetic_labels = np.zeros((len(poetic_texts), num_labels))
     
-    print(f"✅ Corpus poético procesado: {{len(poetic_texts)}} fragmentos como controles")
+    print(f"[OK] Corpus poético procesado: {{len(poetic_texts)}} fragmentos como controles")
     return poetic_texts, poetic_labels
 
 def main():
     """Entrenamiento híbrido científico: Telares + Controles Poéticos"""
-    print("🧪" * 20 + " HYBRID SCIENTIFIC TRAINING " + "🧪" * 20)
-    print("🔬 ENTRENAMIENTO CIENTÍFICO: Telares + Corpus Poético")
-    print("📊 Metodología: Controles negativos para validación estadística")
+    print("" * 20 + " HYBRID SCIENTIFIC TRAINING " + "" * 20)
+    print("[SCIENCE] ENTRENAMIENTO CIENTÍFICO: Telares + Corpus Poético")
+    print("[CHART] Metodología: Controles negativos para validación estadística")
     
     detector = TelaresDetectorSystem()
     
     # Cargar dataset de telares (manipulativo)
-    print("📊 Cargando dataset de telares (manipulativos)...")
+    print("[CHART] Cargando dataset de telares (manipulativos)...")
     X_telares, y_telares = detector.load_training_data()
     
     if X_telares is None or len(X_telares) == 0:
-        print("❌ ERROR: Dataset de telares no encontrado")
+        print("[X] ERROR: Dataset de telares no encontrado")
         sys.exit(1)
     
     # Cargar corpus poético (controles)
-    print("📚 Cargando corpus poético (controles negativos)...")
+    print("[BOOKS] Cargando corpus poético (controles negativos)...")
     X_poetic, y_poetic = load_poetic_corpus_as_controls()
     
     if len(X_poetic) == 0:
-        print("⚠️  No se encontró corpus poético - usando solo dataset telares")
+        print("WARNING:  No se encontró corpus poético - usando solo dataset telares")
         X_combined, y_combined = X_telares, y_telares
     else:
         # Combinar ambos datasets
         X_combined = X_telares + X_poetic
         y_combined = np.vstack([y_telares, y_poetic])
         
-        print(f"✅ Dataset híbrido creado:")
-        print(f"   📨 Mensajes telares: {{len(X_telares)}}")
-        print(f"   📚 Fragmentos poéticos: {{len(X_poetic)}}")
-        print(f"   📊 Total entrenamiento: {{len(X_combined)}}")
+        print(f"[OK] Dataset híbrido creado:")
+        print(f"    Mensajes telares: {{len(X_telares)}}")
+        print(f"   [BOOKS] Fragmentos poéticos: {{len(X_poetic)}}")
+        print(f"   [CHART] Total entrenamiento: {{len(X_combined)}}")
     
-    print("🔥 Entrenando detector híbrido...")
+    print("[FIRE] Entrenando detector híbrido...")
     
     # Entrenar con dataset combinado
     detector.X_train = X_combined
@@ -293,7 +293,7 @@ def main():
     success = detector.train_detector()
     
     if success:
-        print("💾 Guardando detector híbrido...")
+        print("[SAVE] Guardando detector híbrido...")
         
         # Crear directorio models si no existe
         models_dir = Path("models")
@@ -306,13 +306,13 @@ def main():
         joblib.dump(detector.classifier, detector.classifier_path)
         joblib.dump(detector.vectorizer, detector.vectorizer_path)
         
-        print("✅ DETECTOR HÍBRIDO entrenado y guardado")
-        print(f"📁 Ubicación: {{detector.classifier_path}}")
-        print("🧪 Validación científica completada")
-        print("🛡️  Sistema híbrido listo con controles negativos")
+        print("[OK] DETECTOR HÍBRIDO entrenado y guardado")
+        print(f" Ubicación: {{detector.classifier_path}}")
+        print(" Validación científica completada")
+        print("  Sistema híbrido listo con controles negativos")
         sys.exit(0)
     else:
-        print("❌ ERROR: Fallo en el entrenamiento híbrido")
+        print("[X] ERROR: Fallo en el entrenamiento híbrido")
         sys.exit(1)
 
 if __name__ == "__main__":
@@ -326,26 +326,26 @@ if __name__ == "__main__":
     
     def train_with_poetic_corpus(self):
         """Entrenar usando el corpus poético como datos adicionales de control"""
-        print("\n🧪 ENTRENAMIENTO HÍBRIDO CON CORPUS POÉTICO")
+        print("\n ENTRENAMIENTO HÍBRIDO CON CORPUS POÉTICO")
         print("=" * 55)
-        print("📚 Combina corpus poético como CONTROLES NEGATIVOS")
-        print("🎯 Corpus poético = 0 en todas las tácticas manipulativas")
-        print("📊 Mejora balance del dataset: Telares (manipulativo) vs Poesía (limpio)")
-        print("🔬 Científicamente válido: controles negativos reales")
+        print("[BOOKS] Combina corpus poético como CONTROLES NEGATIVOS")
+        print("[TARGET] Corpus poético = 0 en todas las tácticas manipulativas")
+        print("[CHART] Mejora balance del dataset: Telares (manipulativo) vs Poesía (limpio)")
+        print("[SCIENCE] Científicamente válido: controles negativos reales")
         
         response = self.input_validator.get_yes_no_input("¿Proceder con entrenamiento científico híbrido? [Y/n]: ")
         
         if not response:
             return False
         
-        print("🔬 Ejecutando entrenamiento científico con controles...")
+        print("[SCIENCE] Ejecutando entrenamiento científico con controles...")
         
         try:
             # Crear script híbrido que combine ambos datasets
             script_path = Path(__file__).parent.parent.parent / "telares_detector_interface.py"
             hybrid_script = self.create_hybrid_training_script(script_path)
             
-            print("🚀 Iniciando entrenamiento híbrido...")
+            print("[LAUNCH] Iniciando entrenamiento híbrido...")
             start_time = time.time()
             
             # Ejecutar entrenamiento híbrido
@@ -360,9 +360,9 @@ if __name__ == "__main__":
                 self.display.show_success(
                     f"Entrenamiento híbrido completado en {duration/60:.1f} minutos"
                 )
-                print("🎉 Detector híbrido entrenado con corpus poético + telares")
-                print("🧪 Validación científica: controles negativos incluidos")
-                print("🛡️ Mejor precisión esperada en detección real")
+                print(" Detector híbrido entrenado con corpus poético + telares")
+                print(" Validación científica: controles negativos incluidos")
+                print(" Mejor precisión esperada en detección real")
                 self.display.pause_for_user()
                 return True
             else:
@@ -375,7 +375,7 @@ if __name__ == "__main__":
     
     def analyze_training_data(self):
         """Análizar los datos de entrenamiento"""
-        print("\n📊 ANÁLISIS DE DATOS DE ENTRENAMIENTO")
+        print("\n[CHART] ANÁLISIS DE DATOS DE ENTRENAMIENTO")
         print("="*50)
         
         # Ejecutar análisis del dataset
@@ -392,10 +392,10 @@ detector = TelaresDetectorSystem()
 X, y = detector.load_training_data()
 
 if X and y is not None:
-    print("📈 ESTADÍSTICAS DEL DATASET:")
+    print("[GROWTH] ESTADÍSTICAS DEL DATASET:")
     print("="*40)
-    print(f"📝 Total mensajes: {{len(X)}}")
-    print(f"🏷️  Tácticas: {{len(detector.label_names)}}")
+    print(f"[DOC] Total mensajes: {{len(X)}}")
+    print(f"  Tácticas: {{len(detector.label_names)}}")
     
     import numpy as np
     for i, label in enumerate(detector.label_names):
@@ -403,31 +403,31 @@ if X and y is not None:
         pct = (count / len(X)) * 100
         print(f"{{label}}: {{count}} ({{pct:.1f}}%)")
         
-    print(f"\\n📊 Mensajes con múltiples tácticas: {{(y.sum(axis=1) > 1).sum()}}")
-    print(f"📊 Mensajes sin tácticas detectadas: {{(y.sum(axis=1) == 0).sum()}}")
+    print(f"\\n[CHART] Mensajes con múltiples tácticas: {{(y.sum(axis=1) > 1).sum()}}")
+    print(f"[CHART] Mensajes sin tácticas detectadas: {{(y.sum(axis=1) == 0).sum()}}")
 else:
-    print("❌ No se pudo cargar el dataset")
+    print("[X] No se pudo cargar el dataset")
 '''
             
             exec(analysis_script)
             
         except Exception as e:
-            print(f"❌ Error en análisis: {str(e)}")
+            print(f"[X] Error en análisis: {str(e)}")
         
         self.display.pause_for_user()
     
     def quick_validation_training(self):
         """Entrenamiento rápido solo para validación"""
-        print("\n🚀 ENTRENAMIENTO RÁPIDO DE VALIDACIÓN")
+        print("\n[LAUNCH] ENTRENAMIENTO RÁPIDO DE VALIDACIÓN")
         print("="*50)
-        print("⏱️  Modo: Validación rápida del pipeline")
-        print("📊 Usa subset pequeño del dataset")
-        print("🎯 Objetivo: Verificar que todo funciona correctamente")
+        print("[TIME]  Modo: Validación rápida del pipeline")
+        print("[CHART] Usa subset pequeño del dataset")
+        print("[TARGET] Objetivo: Verificar que todo funciona correctamente")
         
         response = self.input_validator.get_yes_no_input("¿Ejecutar validación rápida? [Y/n]: ")
         
         if response:
-            print("⏱️  Ejecutando validación rápida...")
+            print("[TIME]  Ejecutando validación rápida...")
             time.sleep(2)  # Simular procesamiento
             self.display.show_success("Validación completada - Pipeline funcional")
         
@@ -435,26 +435,26 @@ else:
     
     def compare_models(self):
         """Comparar diferentes configuraciones de modelo"""
-        print("\n📈 COMPARACIÓN DE MODELOS")
+        print("\n[GROWTH] COMPARACIÓN DE MODELOS")
         print("="*40)
-        print("🔧 Configuraciones disponibles:")
+        print("[FIX] Configuraciones disponibles:")
         print("   1. Logistic Regression (Rápido)")
         print("   2. Random Forest (Preciso)")
         print("   3. SVM (Balanced)")
         print("   4. Ensemble (Mejor performance)")
         
-        print("\n💡 Esta funcionalidad permite optimizar el detector")
-        print("⏱️  Tiempo estimado por modelo: 3-5 minutos")
+        print("\n[IDEA] Esta funcionalidad permite optimizar el detector")
+        print("[TIME]  Tiempo estimado por modelo: 3-5 minutos")
         
         choice = input("Seleccione configuración (1-4): ").strip()
         
         if choice in ["1", "2", "3", "4"]:
             models = ["Logistic Regression", "Random Forest", "SVM", "Ensemble"]
             selected = models[int(choice) - 1]
-            print(f"🎯 Configurado para usar: {selected}")
+            print(f"[TARGET] Configurado para usar: {selected}")
             self.display.show_success(f"Modelo {selected} seleccionado")
         else:
-            print("❌ Opción inválida")
+            print("[X] Opción inválida")
             
         self.display.pause_for_user()
     
@@ -462,11 +462,11 @@ else:
         """Menú principal de la fase de entrenamiento"""
         while True:
             self.show_training_menu()
-            choice = input("\n🎯 Seleccione una opción: ").strip()
+            choice = input("\n[TARGET] Seleccione una opción: ").strip()
             
             if choice == "1":
                 if self.run_telares_training():
-                    print("🎉 ¡Entrenamiento completado exitosamente!")
+                    print(" ¡Entrenamiento completado exitosamente!")
                     break
             elif choice == "2":
                 self.train_with_poetic_corpus()
@@ -479,4 +479,4 @@ else:
             elif choice == "0":
                 break
             else:
-                print("❌ Opción inválida. Seleccione 0-5.")
+                print("[X] Opción inválida. Seleccione 0-5.")

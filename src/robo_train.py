@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🎓 Robo-Poet: Script de Entrenamiento Simplificado
+[GRAD] Robo-Poet: Script de Entrenamiento Simplificado
 Entrenamiento directo sin interfaz de menú para evitar problemas de terminal interactivo
 """
 import sys
@@ -9,7 +9,7 @@ from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(
-        description="🎓 Robo-Poet: Entrenamiento LSTM Simplificado",
+        description="[GRAD] Robo-Poet: Entrenamiento LSTM Simplificado",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos de uso:
@@ -41,8 +41,8 @@ Archivos soportados:
     # Check if text file exists (look in parent directory)
     text_path = Path(f'../{args.text}') if not Path(args.text).exists() else Path(args.text)
     if not text_path.exists():
-        print(f"❌ Error: No se encontró el archivo '{args.text}'")
-        print("\n📁 Archivos disponibles:")
+        print(f"[X] Error: No se encontró el archivo '{args.text}'")
+        print("\n Archivos disponibles:")
         for txt_file in Path('..').glob('*.txt'):
             print(f"   - {txt_file.name}")
         return 1
@@ -50,11 +50,11 @@ Archivos soportados:
     # Use the absolute path for training
     args.text = str(text_path)
     
-    print("🎓 ROBO-POET: ENTRENAMIENTO ACADÉMICO")
+    print("[GRAD] ROBO-POET: ENTRENAMIENTO ACADÉMICO")
     print("=" * 50)
-    print(f"📁 Archivo: {args.text}")
-    print(f"🎯 Épocas: {args.epochs}")
-    print(f"⏱️  Tiempo estimado: {args.epochs * 2} minutos")
+    print(f" Archivo: {args.text}")
+    print(f"[TARGET] Épocas: {args.epochs}")
+    print(f"[TIME]  Tiempo estimado: {args.epochs * 2} minutos")
     print()
     
     # Import and run robo_poet training
@@ -65,16 +65,16 @@ Archivos soportados:
         success = robo_poet.run_direct_training(args.text, args.epochs)
         
         if success:
-            print("\n🎉 ¡ENTRENAMIENTO COMPLETADO EXITOSAMENTE!")
-            print("\n🎨 Próximo paso - Generación de texto:")
+            print("\n ¡ENTRENAMIENTO COMPLETADO EXITOSAMENTE!")
+            print("\n[ART] Próximo paso - Generación de texto:")
             print("   python robo_generate.py")
             return 0
         else:
-            print("\n❌ Entrenamiento falló")
+            print("\n[X] Entrenamiento falló")
             return 1
             
     except Exception as e:
-        print(f"❌ Error durante entrenamiento: {e}")
+        print(f"[X] Error durante entrenamiento: {e}")
         return 1
 
 if __name__ == "__main__":

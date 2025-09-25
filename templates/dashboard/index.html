@@ -1,0 +1,250 @@
+{% extends "base/base.html" %}
+
+{% block title %}Dashboard - Robo-Poet AI{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- GPU Status Card -->
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-microchip mr-2 text-green-500"></i>
+            GPU Status
+        </h2>
+        <div class="space-y-2">
+            <p>Device: <span class="text-green-400">{{ gpu_name }}</span></p>
+            <p>Memory: <span id="gpu-memory">{{ gpu_memory }}</span></p>
+            <p>Temperature: <span id="gpu-temp">{{ gpu_temp }}</span></p>
+            <p>Utilization: <span id="gpu-util">{{ gpu_util }}</span></p>
+        </div>
+    </div>
+
+    <!-- Active Trainings Card -->
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-brain mr-2 text-purple-500"></i>
+            Active Trainings
+        </h2>
+        <div id="active-trainings">
+            {% for training in active_trainings %}
+            <div class="mb-3 p-3 bg-gray-700 rounded">
+                <p class="font-semibold">{{ training.name }}</p>
+                <div class="w-full bg-gray-600 rounded-full h-2 mt-2">
+                    <div class="bg-purple-500 h-2 rounded-full"
+                         style="width: {{ training.progress }}%"></div>
+                </div>
+                <p class="text-sm mt-1">Epoch {{ training.current_epoch }}/{{ training.total_epochs }}</p>
+            </div>
+            {% empty %}
+            <p class="text-gray-400">No active trainings</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Models Card -->
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-database mr-2 text-blue-500"></i>
+            Recent Models
+        </h2>
+        <div class="space-y-2">
+            {% for model in recent_models %}
+            <div class="flex justify-between items-center p-2 hover:bg-gray-700 rounded">
+                <span>{{ model.name }}</span>
+                <span class="text-sm text-gray-400">Loss: {{ model.best_loss|floatformat:3 }}</span>
+            </div>
+            {% empty %}
+            <p class="text-gray-400">No models yet</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Training Metrics Chart -->
+<div class="mt-8 bg-gray-800 rounded-lg p-6">
+    <h2 class="text-xl font-bold mb-4">Training Metrics</h2>
+    <canvas id="metricsChart" width="400" height="100"></canvas>
+</div>
+
+<!-- Training Control Panel -->
+<div class="mt-8 bg-gray-800 rounded-lg p-6">
+    <h2 class="text-xl font-bold mb-4">Start New Training</h2>
+    <div class="flex gap-4">
+        <input type="text" id="model-name" placeholder="Model Name" class="bg-gray-700 text-white px-4 py-2 rounded">
+        <input type="number" id="epochs" placeholder="Epochs" value="10" class="bg-gray-700 text-white px-4 py-2 rounded w-24">
+        <input type="number" id="cycles" placeholder="Cycles" value="1" class="bg-gray-700 text-white px-4 py-2 rounded w-24">
+        <button onclick="startTraining()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded">
+            <i class="fas fa-play mr-2"></i>Start Training
+        </button>
+    </div>
+</div>
+
+<script>
+// WebSocket connection for real-time updates
+let ws = null;
+let currentSessionId = null;
+
+function connectWebSocket() {
+    ws = new WebSocket('ws://localhost:8000/ws/training/global/');
+
+    ws.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        updateDashboard(data);
+    };
+
+    ws.onerror = function(e) {
+        console.error('WebSocket error:', e);
+    };
+
+    ws.onclose = function(e) {
+        console.log('WebSocket closed, reconnecting...');
+        setTimeout(connectWebSocket, 3000);
+    };
+}
+
+// Connect WebSocket on page load
+connectWebSocket();
+
+// Initialize Chart.js
+const ctx = document.getElementById('metricsChart').getContext('2d');
+const metricsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Train Loss',
+            data: [],
+            borderColor: 'rgb(139, 92, 246)',
+            tension: 0.1
+        }, {
+            label: 'Val Loss',
+            data: [],
+            borderColor: 'rgb(59, 130, 246)',
+            tension: 0.1
+        }, {
+            label: 'Perplexity',
+            data: [],
+            borderColor: 'rgb(34, 197, 94)',
+            tension: 0.1,
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: false,
+                position: 'left'
+            },
+            y1: {
+                beginAtZero: false,
+                position: 'right',
+                grid: {
+                    drawOnChartArea: false
+                }
+            }
+        }
+    }
+});
+
+function updateDashboard(data) {
+    if (data.type === 'metrics_update') {
+        // Update chart
+        const metrics = data.metrics;
+        if (metrics.epoch !== undefined) {
+            metricsChart.data.labels.push(`Epoch ${metrics.epoch}`);
+
+            if (metrics.train_loss !== undefined) {
+                metricsChart.data.datasets[0].data.push(metrics.train_loss);
+            }
+            if (metrics.val_loss !== undefined) {
+                metricsChart.data.datasets[1].data.push(metrics.val_loss);
+            }
+            if (metrics.perplexity !== undefined) {
+                metricsChart.data.datasets[2].data.push(metrics.perplexity);
+            }
+
+            // Keep only last 50 points
+            if (metricsChart.data.labels.length > 50) {
+                metricsChart.data.labels.shift();
+                metricsChart.data.datasets.forEach(dataset => dataset.data.shift());
+            }
+
+            metricsChart.update();
+        }
+
+        // Update GPU memory
+        if (metrics.gpu_memory !== undefined) {
+            document.getElementById('gpu-memory').textContent = `${metrics.gpu_memory.toFixed(2)} GB`;
+        }
+    } else if (data.type === 'gpu_status') {
+        // Update GPU status
+        if (data.data.memory_allocated !== undefined) {
+            document.getElementById('gpu-memory').textContent = `${data.data.memory_allocated.toFixed(2)} GB`;
+        }
+        if (data.data.temperature !== undefined) {
+            document.getElementById('gpu-temp').textContent = `${data.data.temperature}°C`;
+        }
+        if (data.data.utilization !== undefined) {
+            document.getElementById('gpu-util').textContent = `${data.data.utilization}%`;
+        }
+    } else if (data.type === 'training_started') {
+        currentSessionId = data.session_id;
+        showNotification('Training started successfully!', 'success');
+    }
+}
+
+function startTraining() {
+    const modelName = document.getElementById('model-name').value || 'web_model';
+    const epochs = document.getElementById('epochs').value || 10;
+    const cycles = document.getElementById('cycles').value || 1;
+
+    // Send via WebSocket
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'start_training',
+            model_name: modelName,
+            epochs: parseInt(epochs),
+            cycles: parseInt(cycles),
+            phase: '3'  // Always use Phase 3 for intelligent cycle
+        }));
+    } else {
+        // Fallback to HTTP API
+        fetch('/training/api/sessions/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                model_name: modelName,
+                epochs: parseInt(epochs),
+                cycles: parseInt(cycles),
+                phase: '3'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Training started!', 'success');
+                currentSessionId = data.session_id;
+            } else {
+                showNotification('Error starting training', 'error');
+            }
+        });
+    }
+}
+
+function showNotification(message, type) {
+    // Simple notification (you can enhance this)
+    const notif = document.createElement('div');
+    notif.className = `fixed top-4 right-4 px-6 py-3 rounded ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white z-50`;
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 3000);
+}
+
+// Periodic GPU status update
+setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({type: 'get_gpu_status'}));
+    }
+}, 5000);
+</script>
+{% endblock %}

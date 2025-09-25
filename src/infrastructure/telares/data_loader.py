@@ -49,7 +49,7 @@ class TelaresDataLoader:
             
             # Load CSV
             df = pd.read_csv(dataset_file)
-            print(f"📊 Dataset cargado: {len(df)} filas")
+            print(f"[CHART] Dataset cargado: {len(df)} filas")
             
             # Extract messages
             if 'mensaje' not in df.columns:
@@ -68,7 +68,7 @@ class TelaresDataLoader:
                     labels_list.append(tactic_labels)
                     available_tactics.append(tactic)
                 else:
-                    print(f"⚠️ Táctica '{tactic}' no encontrada en dataset")
+                    print(f"WARNING: Táctica '{tactic}' no encontrada en dataset")
                     # Add zero labels for missing tactic
                     labels_list.append([0] * len(messages))
                     available_tactics.append(tactic)
@@ -81,8 +81,8 @@ class TelaresDataLoader:
             messages = [messages[i] for i in valid_indices]
             labels_array = labels_array[valid_indices]
             
-            print(f"✅ Mensajes válidos: {len(messages)}")
-            print(f"🏷️ Tácticas disponibles: {len(available_tactics)}")
+            print(f"[OK] Mensajes válidos: {len(messages)}")
+            print(f" Tácticas disponibles: {len(available_tactics)}")
             
             # Calculate label statistics
             label_stats = {}
@@ -105,7 +105,7 @@ class TelaresDataLoader:
             return messages, labels_array, metadata
             
         except Exception as e:
-            print(f"❌ Error cargando dataset: {e}")
+            print(f"[X] Error cargando dataset: {e}")
             return [], np.array([]), {}
     
     def load_poetic_corpus(self, corpus_dir: str = "corpus") -> List[str]:
@@ -121,13 +121,13 @@ class TelaresDataLoader:
         corpus_path = Path(corpus_dir)
         
         if not corpus_path.exists():
-            print(f"⚠️ Directorio de corpus no encontrado: {corpus_dir}")
+            print(f"WARNING: Directorio de corpus no encontrado: {corpus_dir}")
             return []
         
         text_fragments = []
         text_files = list(corpus_path.glob("*.txt"))
         
-        print(f"📚 Procesando {len(text_files)} archivos de corpus...")
+        print(f"[BOOKS] Procesando {len(text_files)} archivos de corpus...")
         
         for txt_file in text_files:
             try:
@@ -141,12 +141,12 @@ class TelaresDataLoader:
                 selected_fragments = fragments[:25]  # Max 25 fragments per file
                 text_fragments.extend(selected_fragments)
                 
-                print(f"   📖 {txt_file.name}: {len(selected_fragments)} fragmentos")
+                print(f"    {txt_file.name}: {len(selected_fragments)} fragmentos")
                 
             except Exception as e:
-                print(f"⚠️ Error leyendo {txt_file}: {e}")
+                print(f"WARNING: Error leyendo {txt_file}: {e}")
         
-        print(f"✅ Corpus poético procesado: {len(text_fragments)} fragmentos")
+        print(f"[OK] Corpus poético procesado: {len(text_fragments)} fragmentos")
         return text_fragments
     
     def create_hybrid_dataset(self, 
@@ -171,10 +171,10 @@ class TelaresDataLoader:
         combined_messages = telares_messages + poetic_fragments
         combined_labels = np.vstack([telares_labels, poetic_labels])
         
-        print(f"🔬 Dataset híbrido creado:")
-        print(f"   📨 Mensajes telares: {len(telares_messages)}")
-        print(f"   📚 Fragmentos poéticos: {len(poetic_fragments)}")
-        print(f"   📊 Total combinado: {len(combined_messages)}")
+        print(f"[SCIENCE] Dataset híbrido creado:")
+        print(f"    Mensajes telares: {len(telares_messages)}")
+        print(f"   [BOOKS] Fragmentos poéticos: {len(poetic_fragments)}")
+        print(f"   [CHART] Total combinado: {len(combined_messages)}")
         
         return combined_messages, combined_labels
     

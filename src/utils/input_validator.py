@@ -27,11 +27,11 @@ class InputValidator:
                 if min_val <= value <= max_val:
                     return value
                 else:
-                    print(f"❌ Valor debe estar entre {min_val} y {max_val}")
+                    print(f"[X] Valor debe estar entre {min_val} y {max_val}")
             except ValueError:
-                print("❌ Por favor ingresa un número válido")
+                print("[X] Por favor ingresa un número válido")
             except KeyboardInterrupt:
-                print("\n❌ Operación cancelada")
+                print("\n[X] Operación cancelada")
                 return default
     
     @staticmethod
@@ -47,11 +47,11 @@ class InputValidator:
                 if min_val <= value <= max_val:
                     return value
                 else:
-                    print(f"❌ Valor debe estar entre {min_val} y {max_val}")
+                    print(f"[X] Valor debe estar entre {min_val} y {max_val}")
             except ValueError:
-                print("❌ Por favor ingresa un número decimal válido")
+                print("[X] Por favor ingresa un número decimal válido")
             except KeyboardInterrupt:
-                print("\n❌ Operación cancelada")
+                print("\n[X] Operación cancelada")
                 return default
     
     @staticmethod
@@ -67,9 +67,9 @@ class InputValidator:
                 if min_length <= len(user_input) <= max_length:
                     return user_input
                 else:
-                    print(f"❌ Texto debe tener entre {min_length} y {max_length} caracteres")
+                    print(f"[X] Texto debe tener entre {min_length} y {max_length} caracteres")
             except KeyboardInterrupt:
-                print("\n❌ Operación cancelada")
+                print("\n[X] Operación cancelada")
                 return default
     
     @staticmethod
@@ -89,9 +89,9 @@ class InputValidator:
                 if user_input in [choice.lower() for choice in valid_choices]:
                     return user_input
                 else:
-                    print(f"❌ Opción inválida. Opciones válidas: {choices_str}")
+                    print(f"[X] Opción inválida. Opciones válidas: {choices_str}")
             except KeyboardInterrupt:
-                print("\n❌ Operación cancelada")
+                print("\n[X] Operación cancelada")
                 return default.lower() if default else valid_choices[0].lower()
     
     @staticmethod
@@ -108,11 +108,11 @@ class InputValidator:
                 if min_option <= choice <= max_option:
                     return choice
                 else:
-                    print(f"❌ Opción debe estar entre {min_option} y {max_option}")
+                    print(f"[X] Opción debe estar entre {min_option} y {max_option}")
             except ValueError:
-                print("❌ Por favor ingresa un número válido")
+                print("[X] Por favor ingresa un número válido")
             except KeyboardInterrupt:
-                print("\n❌ Operación cancelada")
+                print("\n[X] Operación cancelada")
                 return min_option
     
     @staticmethod
@@ -132,9 +132,9 @@ class InputValidator:
                 elif user_input in ['n', 'no']:
                     return False
                 else:
-                    print("❌ Responde con 'y' (sí) o 'n' (no)")
+                    print("[X] Responde con 'y' (sí) o 'n' (no)")
             except KeyboardInterrupt:
-                print("\n❌ Operación cancelada")
+                print("\n[X] Operación cancelada")
                 return False
     
     @staticmethod
@@ -152,27 +152,27 @@ class InputValidator:
                 path = Path(user_input)
                 
                 if must_exist and not path.exists():
-                    print(f"❌ Archivo no encontrado: {user_input}")
+                    print(f"[X] Archivo no encontrado: {user_input}")
                     continue
                 
                 return str(path)
             except KeyboardInterrupt:
-                print("\n❌ Operación cancelada")
+                print("\n[X] Operación cancelada")
                 return None
     
     @staticmethod
     def validate_epochs_input(epochs: int) -> bool:
         """Validate epochs input for academic purposes."""
         if epochs < 1:
-            print("❌ Número de épocas debe ser al menos 1")
+            print("[X] Número de épocas debe ser al menos 1")
             return False
         
         if epochs > 100:
-            print("⚠️ Número de épocas muy alto (>100). Esto tomará mucho tiempo.")
+            print("WARNING: Número de épocas muy alto (>100). Esto tomará mucho tiempo.")
             return InputValidator.get_confirmation("¿Continuar de todas formas?", False)
         
         if epochs > 50:
-            print("⚠️ Entrenamientos largos (>50 épocas) pueden tomar varias horas.")
+            print("WARNING: Entrenamientos largos (>50 épocas) pueden tomar varias horas.")
             return InputValidator.get_confirmation("¿Continuar?", True)
         
         return True
@@ -181,15 +181,15 @@ class InputValidator:
     def validate_temperature_input(temperature: float) -> bool:
         """Validate temperature input for generation."""
         if temperature <= 0:
-            print("❌ Temperature debe ser mayor que 0")
+            print("[X] Temperature debe ser mayor que 0")
             return False
         
         if temperature > 2.0:
-            print("⚠️ Temperature muy alta (>2.0) puede generar texto incoherente.")
+            print("WARNING: Temperature muy alta (>2.0) puede generar texto incoherente.")
             return InputValidator.get_confirmation("¿Continuar de todas formas?", False)
         
         if temperature < 0.3:
-            print("⚠️ Temperature muy baja (<0.3) generará texto muy repetitivo.")
+            print("WARNING: Temperature muy baja (<0.3) generará texto muy repetitivo.")
             return InputValidator.get_confirmation("¿Continuar de todas formas?", True)
         
         return True
@@ -198,11 +198,11 @@ class InputValidator:
     def validate_length_input(length: int) -> bool:
         """Validate generation length input."""
         if length < 10:
-            print("❌ Longitud debe ser al menos 10 caracteres")
+            print("[X] Longitud debe ser al menos 10 caracteres")
             return False
         
         if length > 2000:
-            print("⚠️ Longitud muy alta (>2000) puede tomar mucho tiempo.")
+            print("WARNING: Longitud muy alta (>2000) puede tomar mucho tiempo.")
             return InputValidator.get_confirmation("¿Continuar?", True)
         
         return True

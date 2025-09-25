@@ -33,13 +33,13 @@ class RoboPoetModel:
         self.vocab_size = vocab_size
         self.model_wrapper = create_pytorch_model(vocab_size=vocab_size, **kwargs)
         
-        print(f"🚀 RoboPoet PyTorch Model initialized")
-        print(f"   🔄 Migrated from TensorFlow LSTM to PyTorch GPT")
-        print(f"   📊 Architecture: Transformer (vs previous LSTM)")
+        print(f"[LAUNCH] RoboPoet PyTorch Model initialized")
+        print(f"   [CYCLE] Migrated from TensorFlow LSTM to PyTorch GPT")
+        print(f"   [CHART] Architecture: Transformer (vs previous LSTM)")
     
     def compile_model(self, **kwargs):
         """Compatibility method - PyTorch models don't need compilation."""
-        print("✅ PyTorch model ready (compilation not required)")
+        print("[OK] PyTorch model ready (compilation not required)")
         return self
     
     def fit(self, *args, **kwargs):
@@ -49,7 +49,7 @@ class RoboPoetModel:
         Note: For full training, use the robo-poet-pytorch training system.
         This is a compatibility wrapper for the main system.
         """
-        print("🏋️ For full training, use: robo-poet-pytorch/main.py train")
+        print(" For full training, use: robo-poet-pytorch/main.py train")
         return self
     
     def predict(self, input_data, **kwargs):
@@ -62,7 +62,7 @@ class RoboPoetModel:
     
     def save(self, filepath: str):
         """Save model (redirects to PyTorch checkpoint)."""
-        print(f"💾 PyTorch model saving handled by training system")
+        print(f"[SAVE] PyTorch model saving handled by training system")
         print(f"   Use checkpoints in: robo-poet-pytorch/checkpoints/")
     
     def load_weights(self, filepath: str):
@@ -102,7 +102,7 @@ def load_model(model_path: str) -> RoboPoetModel:
 # Legacy compatibility functions for existing code
 def build_lstm_model(*args, **kwargs) -> RoboPoetModel:
     """Legacy function - now creates GPT model instead of LSTM."""
-    print("🔄 Legacy LSTM function redirected to PyTorch GPT")
+    print("[CYCLE] Legacy LSTM function redirected to PyTorch GPT")
     return create_model(**kwargs)
 
 
@@ -126,7 +126,7 @@ DEFAULT_MODEL_CONFIG = {
 
 if __name__ == "__main__":
     # Test the PyTorch model integration
-    print("🧪 Testing RoboPoet PyTorch Model Integration...")
+    print(" Testing RoboPoet PyTorch Model Integration...")
     
     try:
         # Create model
@@ -135,15 +135,15 @@ if __name__ == "__main__":
         
         # Test text generation
         generated = model.generate_text("To be or not to be", max_tokens=50)
-        print(f"\n📝 Generated text: {generated[:100]}...")
+        print(f"\n[DOC] Generated text: {generated[:100]}...")
         
         # Show configuration
         config = model.get_config()
-        print(f"\n⚙️ Model configuration: {config['framework']} {config['architecture']}")
+        print(f"\n Model configuration: {config['framework']} {config['architecture']}")
         
-        print(f"\n✅ PyTorch integration test completed!")
+        print(f"\n[OK] PyTorch integration test completed!")
         
     except Exception as e:
-        print(f"❌ Integration test failed: {e}")
+        print(f"[X] Integration test failed: {e}")
         import traceback
         traceback.print_exc()

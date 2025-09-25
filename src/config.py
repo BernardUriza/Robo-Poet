@@ -70,13 +70,13 @@ class GPUConfigurator:
         
         if not gpus:
             # Standard detection failed, try direct GPU operation (WSL2 fix)
-            print("🔍 Detección estándar GPU falló, probando acceso directo...")
+            print("[SEARCH] Detección estándar GPU falló, probando acceso directo...")
             try:
-                print("✅ GPU accesible directamente, configurando para uso forzado...")
+                print("[OK] GPU accesible directamente, configurando para uso forzado...")
                 # GPU works, proceed with configuration assuming GPU:0 exists
                 gpus = ['/GPU:0']  # Fake GPU entry for configuration
             except Exception as e:
-                print(f"❌ GPU no accesible: {e}")
+                print(f"[X] GPU no accesible: {e}")
                 return False
         
         try:
@@ -84,9 +84,9 @@ class GPUConfigurator:
             real_gpus = [gpu for gpu in gpus if hasattr(gpu, 'name')]
             if real_gpus:
                 for gpu in real_gpus:
-                print(f"✅ GPU ACADÉMICA CONFIGURADA: {real_gpus[0].name}")
+                print(f"[OK] GPU ACADÉMICA CONFIGURADA: {real_gpus[0].name}")
             else:
-                print("✅ GPU ACADÉMICA CONFIGURADA: /GPU:0 (acceso directo)")
+                print("[OK] GPU ACADÉMICA CONFIGURADA: /GPU:0 (acceso directo)")
             
             # Use float32 for stability (avoiding XLA issues)
             
@@ -97,7 +97,7 @@ class GPUConfigurator:
             return True
             
         except RuntimeError as e:
-            print(f"❌ Error configurando GPU: {e}")
+            print(f"[X] Error configurando GPU: {e}")
             return False
     
     @staticmethod
@@ -115,10 +115,10 @@ class GPUConfigurator:
             cuda_visible = os.environ.get('CUDA_VISIBLE_DEVICES', '')
             if cuda_visible == '':
                 # CUDA_VISIBLE_DEVICES vacío = no GPU forzado
-                print("🚫 CUDA_VISIBLE_DEVICES=\"\" - GPU forzadamente deshabilitada")
+                print(" CUDA_VISIBLE_DEVICES=\"\" - GPU forzadamente deshabilitada")
                 # TERMINAR SISTEMA - NO HAY FALLBACK
                 print("\n" + "="*60)
-                print("🔴 ERROR CRÍTICO: GPU DESHABILITADA")
+                print(" ERROR CRÍTICO: GPU DESHABILITADA")
                 print("="*60)
                 print("\nEste proyecto REQUIERE GPU para cumplir requisitos académicos.")
                 print("CUDA_VISIBLE_DEVICES está vacío - GPU forzadamente deshabilitada.")
@@ -128,12 +128,12 @@ class GPUConfigurator:
             
             # Intentar detección WSL2 solo si GPU podría estar disponible
             try:
-                print("✅ GPU detectada via workaround WSL2")
+                print("[OK] GPU detectada via workaround WSL2")
                 return '/GPU:0'
             except Exception as e:
                 # TERMINAR SISTEMA - NO HAY FALLBACK
                 print("\n" + "="*60)
-                print("🔴 ERROR CRÍTICO: GPU NO DISPONIBLE")
+                print(" ERROR CRÍTICO: GPU NO DISPONIBLE")
                 print("="*60)
                 print("\nEste proyecto REQUIERE GPU para cumplir requisitos académicos.")
                 print("\nSoluciones:")

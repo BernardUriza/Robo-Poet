@@ -790,7 +790,7 @@ class ErrorContextManager:
 # Example usage and demonstrations
 def demo_error_handling():
     """Demonstrate enhanced error handling capabilities."""
-    print("🔧 Demonstrating enhanced error handling system...")
+    print("[FIX] Demonstrating enhanced error handling system...")
     
     # Initialize error handler with monitoring
     error_handler = ErrorHandler(enable_monitoring=True)
@@ -855,7 +855,7 @@ def demo_error_handling():
     
     # Show recovery statistics
     stats = error_handler.get_recovery_stats()
-    print(f"\n📊 Recovery Statistics:")
+    print(f"\n[CHART] Recovery Statistics:")
     print(f"Total errors handled: {stats['total_errors_handled']}")
     print(f"Recovery attempts: {stats['recovery_attempts']}")
     print(f"Success rates: {stats['success_rates']}")
@@ -866,15 +866,15 @@ def demo_error_handling():
         logger = get_logger("demo.logger")
         
         error_summary = logger.get_error_summary()
-        print(f"\n📈 Error Summary: {error_summary}")
+        print(f"\n[GROWTH] Error Summary: {error_summary}")
         
         performance_summary = logger.get_performance_summary()
-        print(f"📈 Performance Summary: {performance_summary}")
+        print(f"[GROWTH] Performance Summary: {performance_summary}")
         
     except ImportError:
         print("Structured logging not available for summaries")
     
-    print("\n✅ Error handling demonstration complete!")
+    print("\n[OK] Error handling demonstration complete!")
 
 
 def create_error_context_decorator(component: str):

@@ -73,16 +73,16 @@ class FileManager:
                     final_loss = metadata.get('final_loss', float('inf'))
                     if isinstance(final_loss, (int, float)):
                         if final_loss < 1.0:
-                            model_info['quality_rating'] = '🌟 Excelente'
+                            model_info['quality_rating'] = '[STAR] Excelente'
                         elif final_loss < 1.5:
-                            model_info['quality_rating'] = '⭐ Bueno'
+                            model_info['quality_rating'] = '[STAR] Bueno'
                         elif final_loss < 2.0:
-                            model_info['quality_rating'] = '📊 Aceptable'
+                            model_info['quality_rating'] = '[CHART] Aceptable'
                         else:
-                            model_info['quality_rating'] = '⚠️ Requiere mejora'
+                            model_info['quality_rating'] = 'WARNING: Requiere mejora'
                 
                 except Exception as e:
-                    print(f"⚠️ Error loading metadata for {model_path}: {e}")
+                    print(f"WARNING: Error loading metadata for {model_path}: {e}")
             
             enhanced_models.append(model_info)
         
@@ -147,17 +147,17 @@ class FileManager:
         # Save generation with header
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write("=" * 60 + "\n")
-            f.write("🎨 ROBO-POET: GENERACIÓN DE TEXTO\n")
+            f.write("[ART] ROBO-POET: GENERACIÓN DE TEXTO\n")
             f.write("=" * 60 + "\n")
-            f.write(f"📅 Fecha: {metadata['generation_time']}\n")
-            f.write(f"🤖 Modelo: {model_name}\n")
-            f.write(f"🌱 Seed: '{seed}'\n")
-            f.write(f"🌡️ Temperature: {temperature}\n")
-            f.write(f"📏 Longitud: {length} (real: {len(result)})\n")
+            f.write(f" Fecha: {metadata['generation_time']}\n")
+            f.write(f"[AI] Modelo: {model_name}\n")
+            f.write(f" Seed: '{seed}'\n")
+            f.write(f" Temperature: {temperature}\n")
+            f.write(f" Longitud: {length} (real: {len(result)})\n")
             f.write("=" * 60 + "\n\n")
             f.write(result)
             f.write("\n\n" + "=" * 60 + "\n")
-            f.write("🎓 Generado con Robo-Poet Academic Framework\n")
+            f.write("[GRAD] Generado con Robo-Poet Academic Framework\n")
             f.write("=" * 60 + "\n")
         
         # Save metadata

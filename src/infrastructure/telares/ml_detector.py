@@ -51,9 +51,9 @@ class TelaresMLDetector:
             True if training successful
         """
         try:
-            print(f"🔥 Iniciando entrenamiento ML...")
-            print(f"   📊 Mensajes: {len(X_train)}")
-            print(f"   🏷️  Tácticas: {y_train.shape[1] if y_train.ndim > 1 else 1}")
+            print(f"[FIRE] Iniciando entrenamiento ML...")
+            print(f"   [CHART] Mensajes: {len(X_train)}")
+            print(f"     Tácticas: {y_train.shape[1] if y_train.ndim > 1 else 1}")
             
             # Initialize TF-IDF vectorizer
             self.vectorizer = TfidfVectorizer(
@@ -66,7 +66,7 @@ class TelaresMLDetector:
             
             # Vectorize training texts
             X_vectorized = self.vectorizer.fit_transform(X_train)
-            print(f"   🔢 Features: {X_vectorized.shape[1]}")
+            print(f"    Features: {X_vectorized.shape[1]}")
             
             # Initialize multi-output classifier
             base_classifier = LogisticRegression(
@@ -78,11 +78,11 @@ class TelaresMLDetector:
             self.classifier = MultiOutputClassifier(base_classifier)
             
             # Train model
-            print("   🧠 Entrenando clasificador...")
+            print("   [BRAIN] Entrenando clasificador...")
             self.classifier.fit(X_vectorized, y_train)
             
             self._is_trained = True
-            print("✅ Entrenamiento completado")
+            print("[OK] Entrenamiento completado")
             
             # Quick validation
             self._validate_training(X_train[:5], y_train[:5])
@@ -90,7 +90,7 @@ class TelaresMLDetector:
             return True
             
         except Exception as e:
-            print(f"❌ Error en entrenamiento: {e}")
+            print(f"[X] Error en entrenamiento: {e}")
             return False
     
     def predict(self, messages: List[str]) -> List[List[float]]:
@@ -104,7 +104,7 @@ class TelaresMLDetector:
             List of prediction arrays, one per message
         """
         if not self.is_ready():
-            print("⚠️ Modelo no entrenado")
+            print("WARNING: Modelo no entrenado")
             return [[0.0] * 7 for _ in messages]
         
         try:
@@ -130,7 +130,7 @@ class TelaresMLDetector:
             return result
             
         except Exception as e:
-            print(f"⚠️ Error en predicción: {e}")
+            print(f"WARNING: Error en predicción: {e}")
             return [[0.0] * 7 for _ in messages]
     
     def predict_single(self, message: str) -> List[float]:
@@ -151,7 +151,7 @@ class TelaresMLDetector:
         """
         try:
             if not self.is_ready():
-                print("⚠️ Modelo no entrenado - no se puede guardar")
+                print("WARNING: Modelo no entrenado - no se puede guardar")
                 return False
             
             # Save classifier
@@ -160,13 +160,13 @@ class TelaresMLDetector:
             # Save vectorizer
             joblib.dump(self.vectorizer, vectorizer_path)
             
-            print(f"💾 Modelo guardado en: {model_path}")
-            print(f"💾 Vectorizador guardado en: {vectorizer_path}")
+            print(f"[SAVE] Modelo guardado en: {model_path}")
+            print(f"[SAVE] Vectorizador guardado en: {vectorizer_path}")
             
             return True
             
         except Exception as e:
-            print(f"❌ Error guardando modelo: {e}")
+            print(f"[X] Error guardando modelo: {e}")
             return False
     
     def load_model(self, model_path: str, vectorizer_path: str) -> bool:
@@ -185,11 +185,11 @@ class TelaresMLDetector:
             vectorizer_file = Path(vectorizer_path)
             
             if not model_file.exists():
-                print(f"⚠️ Archivo de modelo no encontrado: {model_path}")
+                print(f"WARNING: Archivo de modelo no encontrado: {model_path}")
                 return False
                 
             if not vectorizer_file.exists():
-                print(f"⚠️ Archivo de vectorizador no encontrado: {vectorizer_path}")
+                print(f"WARNING: Archivo de vectorizador no encontrado: {vectorizer_path}")
                 return False
             
             # Load classifier
@@ -200,13 +200,13 @@ class TelaresMLDetector:
             
             self._is_trained = True
             
-            print(f"✅ Modelo cargado desde: {model_path}")
-            print(f"✅ Vectorizador cargado desde: {vectorizer_path}")
+            print(f"[OK] Modelo cargado desde: {model_path}")
+            print(f"[OK] Vectorizador cargado desde: {vectorizer_path}")
             
             return True
             
         except Exception as e:
-            print(f"❌ Error cargando modelo: {e}")
+            print(f"[X] Error cargando modelo: {e}")
             return False
     
     def is_loaded(self) -> bool:
@@ -233,16 +233,16 @@ class TelaresMLDetector:
         """Quick validation with training sample"""
         try:
             predictions = self.predict(X_sample)
-            print(f"   🧪 Validación: {len(predictions)} predicciones generadas")
+            print(f"    Validación: {len(predictions)} predicciones generadas")
             
             # Check if predictions are reasonable
             for i, pred in enumerate(predictions[:2]):  # Show first 2
                 message_preview = X_sample[i][:50] + "..." if len(X_sample[i]) > 50 else X_sample[i]
                 total_score = sum(pred)
-                print(f"   📝 '{message_preview}' -> Score: {total_score:.2f}")
+                print(f"   [DOC] '{message_preview}' -> Score: {total_score:.2f}")
                 
         except Exception as e:
-            print(f"   ⚠️ Validación falló: {e}")
+            print(f"   WARNING: Validación falló: {e}")
     
     def evaluate_performance(self, X_test: List[str], y_test: np.ndarray) -> dict:
         """

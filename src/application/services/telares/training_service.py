@@ -38,17 +38,17 @@ class TelaresTrainingService:
         start_time = time.time()
         
         # Load training data
-        print("📊 Cargando dataset de telares...")
+        print("[CHART] Cargando dataset de telares...")
         X_train, y_train, metadata = self.data_loader.load_telares_dataset()
         
         if not X_train:
             raise ValueError("No se pudo cargar el dataset de entrenamiento")
         
-        print(f"✅ Dataset cargado: {len(X_train)} mensajes")
-        print(f"📋 Tácticas: {metadata.get('tactic_names', [])}")
+        print(f"[OK] Dataset cargado: {len(X_train)} mensajes")
+        print(f" Tácticas: {metadata.get('tactic_names', [])}")
         
         # Train model
-        print("🔥 Entrenando detector...")
+        print("[FIRE] Entrenando detector...")
         success = self.ml_detector.train(X_train, y_train)
         
         if not success:
@@ -92,14 +92,14 @@ class TelaresTrainingService:
         start_time = time.time()
         
         # Load telares data (positive examples)
-        print("📊 Cargando dataset de telares (manipulativos)...")
+        print("[CHART] Cargando dataset de telares (manipulativos)...")
         X_telares, y_telares, metadata = self.data_loader.load_telares_dataset()
         
         if not X_telares:
             raise ValueError("No se pudo cargar el dataset de telares")
         
         # Load poetic corpus as negative controls
-        print("📚 Cargando corpus poético (controles negativos)...")
+        print("[BOOKS] Cargando corpus poético (controles negativos)...")
         X_poetic = self.data_loader.load_poetic_corpus(corpus_dir)
         
         # Create labels for poetic texts (all zeros - no manipulation)
@@ -109,13 +109,13 @@ class TelaresTrainingService:
         X_combined = X_telares + X_poetic
         y_combined = np.vstack([y_telares, y_poetic]) if len(X_poetic) > 0 else y_telares
         
-        print(f"✅ Dataset híbrido creado:")
-        print(f"   📨 Mensajes telares: {len(X_telares)}")
-        print(f"   📚 Fragmentos poéticos: {len(X_poetic)}")
-        print(f"   📊 Total entrenamiento: {len(X_combined)}")
+        print(f"[OK] Dataset híbrido creado:")
+        print(f"    Mensajes telares: {len(X_telares)}")
+        print(f"   [BOOKS] Fragmentos poéticos: {len(X_poetic)}")
+        print(f"   [CHART] Total entrenamiento: {len(X_combined)}")
         
         # Train hybrid model
-        print("🔥 Entrenando detector híbrido...")
+        print("[FIRE] Entrenando detector híbrido...")
         success = self.ml_detector.train(X_combined, y_combined)
         
         if not success:
@@ -171,7 +171,7 @@ class TelaresTrainingService:
                 "Hoy es un día hermoso para caminar por el parque"
             ]
         
-        print(f"🧪 Validando modelo con {len(test_messages)} mensajes de prueba...")
+        print(f" Validando modelo con {len(test_messages)} mensajes de prueba...")
         
         # Get predictions
         predictions = self.ml_detector.predict(test_messages)
@@ -241,14 +241,14 @@ class TelaresTrainingService:
         """
         try:
             # Load existing telares dataset
-            print("📊 Cargando dataset Telares existente...")
+            print("[CHART] Cargando dataset Telares existente...")
             X_original, y_original, metadata = self.data_loader.load_telares_dataset()
             
             if not X_original:
                 raise ValueError("No se pudo cargar dataset original de Telares")
             
             # Process generated samples
-            print(f"🔄 Procesando {len(generated_samples)} muestras generadas...")
+            print(f"[CYCLE] Procesando {len(generated_samples)} muestras generadas...")
             
             X_generated = []
             y_generated_list = []
@@ -281,13 +281,13 @@ class TelaresTrainingService:
             X_combined = X_original + X_generated
             y_combined = np.vstack([y_original, y_generated])
             
-            print(f"✅ Dataset combinado creado:")
-            print(f"   📨 Mensajes originales: {len(X_original)}")
-            print(f"   🤖 Muestras generadas: {len(X_generated)}")
-            print(f"   📊 Total combinado: {len(X_combined)}")
+            print(f"[OK] Dataset combinado creado:")
+            print(f"    Mensajes originales: {len(X_original)}")
+            print(f"   [AI] Muestras generadas: {len(X_generated)}")
+            print(f"   [CHART] Total combinado: {len(X_combined)}")
             
             # Train with combined dataset
-            print("🔥 Re-entrenando detector con dataset ampliado...")
+            print("[FIRE] Re-entrenando detector con dataset ampliado...")
             success = self.ml_detector.train(X_combined, y_combined)
             
             if not success:
@@ -329,10 +329,10 @@ class TelaresTrainingService:
             # Update training metrics
             self.training_metrics = integration_result
             
-            print("✅ INTEGRACIÓN DE MUESTRAS GENERADAS COMPLETADA")
-            print(f"🎯 Mejora del dataset: {improvement_ratio:.1f}x")
-            print(f"🤖 Muestras manipulativas: {manipulative_generated}")
-            print(f"🧪 Muestras de control: {control_generated}")
+            print("[OK] INTEGRACIÓN DE MUESTRAS GENERADAS COMPLETADA")
+            print(f"[TARGET] Mejora del dataset: {improvement_ratio:.1f}x")
+            print(f"[AI] Muestras manipulativas: {manipulative_generated}")
+            print(f" Muestras de control: {control_generated}")
             
             return integration_result
             
@@ -342,7 +342,7 @@ class TelaresTrainingService:
                 "error": str(e),
                 "timestamp": time.time()
             }
-            print(f"❌ Error en integración de muestras: {e}")
+            print(f"[X] Error en integración de muestras: {e}")
             return error_result
     
     def auto_retrain_with_amplification(self, generation_service_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -373,15 +373,15 @@ class TelaresTrainingService:
                     "reason": "No generated samples available"
                 }
             
-            print("🔄 AUTO-REENTRENAMIENTO TELARES DETECTOR ACTIVADO")
-            print(f"🤖 Integrando {len(generated_samples)} muestras sintéticas...")
+            print("[CYCLE] AUTO-REENTRENAMIENTO TELARES DETECTOR ACTIVADO")
+            print(f"[AI] Integrando {len(generated_samples)} muestras sintéticas...")
             
             # Integrate generated samples
             integration_result = self.integrate_generated_samples(generated_samples)
             
             if integration_result["success"]:
-                print("✅ AUTO-REENTRENAMIENTO COMPLETADO")
-                print("🛡️ Telares detector mejorado automáticamente")
+                print("[OK] AUTO-REENTRENAMIENTO COMPLETADO")
+                print(" Telares detector mejorado automáticamente")
                 
                 return {
                     "auto_retrain": True,
