@@ -14,24 +14,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-### Dual-Framework Structure
-The project contains two main implementations:
+### Hybrid Architecture Structure
+The project contains three main implementations:
 
-1. **Legacy Modular System** (`src/` directory):
+1. **Django Web Framework** (Primary Interface):
+   - Full-stack web application with real-time capabilities
+   - Django Channels for WebSocket communication
+   - Interactive dashboard with live training metrics
+   - Training session management and visualization
+
+2. **Legacy Modular System** (`src/` directory):
    - Domain-driven design with clean architecture patterns
-   - Complex enterprise-style structure with repositories, services, entities
+   - Enterprise-style structure with repositories, services, entities
    - Orchestrator-based workflow (`src/orchestrator.py`)
+   - Headless mode for Django integration
 
-2. **PyTorch Implementation** (`robo-poet-pytorch/` directory):
-   - Simplified, research-focused structure
+3. **PyTorch Implementation** (`src/legacy/robo-poet-pytorch/` directory):
+   - Simplified, research-focused structure (archived)
    - Direct CLI interface via `main.py`
    - MinGPT-style transformer architecture
 
 ### Core Components
 
 #### Main Entry Points
-- `robo_poet.py` - Legacy system orchestrator entry point
-- `robo-poet-pytorch/main.py` - PyTorch CLI interface
+- `manage.py` - Django web application server
+- `robo_poet.py` - CLI orchestrator with Django integration
+- `src/legacy/robo-poet-pytorch/main.py` - Legacy PyTorch CLI interface (archived)
 
 #### Model Architecture (`src/models/gpt_pytorch.py`)
 - MinGPT-inspired transformer with 6 layers, 8 heads, 256 embedding dimensions
@@ -56,21 +64,36 @@ The project contains two main implementations:
 
 ## Common Development Commands
 
-### Training
+### Django Web Interface (Primary)
+```bash
+# Start Django development server
+python manage.py runserver 8000
+
+# Access web interface
+# Navigate to: http://localhost:8000
+
+# Run Django migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# Test Django integration
+python test_training_integration.py
+```
+
+### CLI Training (Alternative)
 ```bash
 # Legacy system training
 python robo_poet.py
 
-# PyTorch direct training
-cd robo-poet-pytorch
-python main.py train --epochs 25 --batch_size 32
-
 # Quick test training
 python robo_poet.py --test quick
 
-# NEW: Intelligent training cycle with Claude AI
+# Intelligent training cycle with Claude AI
 python robo_poet.py
 # Select option 3: 🧠 FASE 3: Ciclo Inteligente con Claude AI
+
+# Headless mode for Django integration
+python robo_poet.py --headless
 ```
 
 ### Claude AI Integration Setup
@@ -87,12 +110,16 @@ export CLAUDE_API_KEY=your_api_key_here
 
 ### Text Generation
 ```bash
-# PyTorch generation
-cd robo-poet-pytorch
-python main.py generate --checkpoint checkpoints/best.pth --prompt "To be or not to be"
+# Web interface generation
+# Use Django dashboard at http://localhost:8000
 
-# Interactive generation
-python main.py generate --checkpoint checkpoints/best.pth --interactive
+# CLI generation (legacy)
+python robo_poet.py
+# Select option 2: Phase 2 - Text Generation
+
+# Legacy PyTorch generation (archived)
+cd src/legacy/robo-poet-pytorch
+python main.py generate --checkpoint checkpoints/best.pth --prompt "To be or not to be"
 ```
 
 ### Testing and Validation
@@ -104,14 +131,20 @@ python src/testing/module2_test_suite.py
 python src/utils/run_module2_tests.py --quick
 ```
 
-### Vocabulary Management
+### Django Web Features
 ```bash
-# Create vocabulary from text corpus
-cd robo-poet-pytorch
-python main.py vocab --text_path data/processed/unified_corpus.txt
+# Real-time training monitoring via WebSocket
+# Live GPU metrics and training progress
+# Interactive training session management
+# Chart.js visualization of loss curves
+# Training history and session tracking
 
-# Legacy vocabulary builder
-python src/vocabulary_builder.py
+# WebSocket endpoint
+ws://localhost:8000/ws/training/global/
+
+# REST API endpoints
+http://localhost:8000/training/api/sessions/
+http://localhost:8000/training/api/gpu-status/
 ```
 
 ## Development Guidelines
@@ -149,31 +182,57 @@ python src/vocabulary_builder.py
 
 ## Project Structure Context
 
-### Legacy System (`src/`)
+### Django Web Framework (Primary)
 ```
-src/
-├── core/           # Configuration and exceptions
-├── domain/         # Business logic and entities
-├── application/    # Commands, queries, services
-├── infrastructure/ # Persistence and external services
-├── interface/      # UI and workflow phases
-├── models/         # Neural network implementations
-├── data/           # Data processing pipelines
-└── utils/          # Helper utilities
+robo_poet_web/      # Django project settings
+├── settings.py     # Main configuration
+├── urls.py         # URL routing
+├── asgi.py         # WebSocket configuration
+└── wsgi.py         # WSGI configuration
+
+dashboard/          # Main dashboard app
+├── views.py        # Dashboard views
+├── models.py       # Dashboard models
+└── migrations/     # Database migrations
+
+training/           # Training management app
+├── models.py       # TrainingSession, TrainingMetric
+├── views.py        # Training API endpoints
+├── consumers.py    # WebSocket consumers
+├── routing.py      # WebSocket routing
+└── urls.py         # REST API URLs
+
+templates/          # Web templates
+├── base/           # Base templates
+└── dashboard/      # Dashboard templates
 ```
 
-### PyTorch System (`robo-poet-pytorch/`)
+### Core AI System (`src/`)
 ```
-robo-poet-pytorch/
+src/
+├── orchestrator.py         # Main orchestrator with Django integration
+├── intelligence/           # Claude AI integration
+│   └── claude_integration.py
+├── infrastructure/         # External services
+│   └── django_integration.py
+├── interface/              # Phase interfaces
+│   ├── phase1_training.py
+│   ├── phase2_generation.py
+│   └── phase3_intelligent_cycle.py
+├── models/                 # Neural network implementations
+├── data/                   # Data processing pipelines
+└── utils/                  # Helper utilities
+```
+
+### Legacy PyTorch System (`src/legacy/robo-poet-pytorch/`)
+```
+src/legacy/robo-poet-pytorch/ (Archived)
 ├── src/
 │   ├── models/     # GPT model implementation
 │   ├── training/   # Training loops and optimization
 │   ├── generation/ # Text generation utilities
-│   ├── data/       # Dataset handling
 │   └── utils/      # Vocabulary and preprocessing
-├── data/           # Training data and vocabularies
-├── checkpoints/    # Model weights and training states
-└── logs/           # TensorBoard and training logs
+└── main.py         # Legacy CLI interface
 ```
 
 ## Important Configuration
@@ -209,12 +268,48 @@ robo-poet-pytorch/
 - Gradient analysis utilities
 - Loss landscape visualization
 
+## Django Web Integration
+
+### Real-time WebSocket Communication
+- **WebSocket URL**: `ws://localhost:8000/ws/training/global/`
+- **Real-time Metrics**: Live training loss, GPU usage, perplexity
+- **Bidirectional Communication**: Web → CLI control commands
+- **Session Tracking**: Database persistence of training sessions
+
+### Django Models
+```python
+# TrainingSession - Tracks complete training runs
+class TrainingSession(models.Model):
+    name = models.CharField(max_length=200)
+    status = models.CharField(choices=STATUS_CHOICES)
+    current_epoch = models.IntegerField()
+    current_loss = models.FloatField()
+    claude_enabled = models.BooleanField()
+    process_id = models.IntegerField()  # robo_poet.py PID
+
+# TrainingMetric - Individual metric points
+class TrainingMetric(models.Model):
+    session = models.ForeignKey(TrainingSession)
+    epoch = models.IntegerField()
+    train_loss = models.FloatField()
+    gpu_memory_used = models.FloatField()
+```
+
+### Headless Mode Integration
+- **Environment Variables**: `DJANGO_RUN=true`, `TRAINING_SESSION_ID=123`
+- **WebSocket Reporter**: `src/infrastructure/django_integration.py`
+- **CLI Integration**: `robo_poet.py --headless` for web execution
+- **Process Monitoring**: Subprocess control via WebSocket commands
+
 ## Notes for Development
 
-- The system supports both character-level and word-level tokenization
-- Model checkpointing includes optimizer states for resume capability
-- TensorBoard logging for training visualization
-- Extensive error handling with academic-focused reporting
-- Multi-phase training interface (Phase 1: Training, Phase 2: Generation)
+- **Primary Interface**: Django web dashboard at `http://localhost:8000`
+- **CLI Alternative**: `python robo_poet.py` for direct terminal access
+- **Real-time Updates**: WebSocket integration for live metrics
+- **Database Tracking**: All training sessions persisted in SQLite/PostgreSQL
+- **Multi-phase Support**: Phase 1 (Training), Phase 2 (Generation), Phase 3 (Intelligent AI)
+- **Claude AI Integration**: Intelligent training cycles with cost tracking
+- **GPU Optimization**: RTX 2000 Ada specific memory management
+- **Testing Suite**: Comprehensive integration testing via `test_training_integration.py`
 
-When working with this codebase, prefer the PyTorch implementation (`robo-poet-pytorch/`) for new features, as it represents the current direction of the project. The legacy system (`src/`) is maintained for compatibility but is more complex.
+When working with this codebase, prefer the **Django web interface** for user interactions and training management. The CLI system (`src/orchestrator.py`) now supports headless mode for seamless web integration. The legacy PyTorch implementation (`src/legacy/robo-poet-pytorch/`) is archived but maintained for reference.
